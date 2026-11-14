@@ -244,7 +244,7 @@ function statusPriorityAndPoses(logger as Logger) as Boolean {
 (:test)
 function bonusesAreCapped(logger as Logger) as Boolean {
     var m = new MonkeyModel();
-    m.update(500, 0, noHistory());
+    m.update(500, st(0), noHistory());
     Test.assert(m.addBreathBonus());
     Test.assert(!m.addBreathBonus());
     Test.assertEqual(m.getXp(), MonkeyModel.XP_BREATH);
@@ -253,7 +253,7 @@ function bonusesAreCapped(logger as Logger) as Boolean {
     var e = m.takeEvent();
     Test.assert(e != null && e[3] == MonkeyModel.EV_REVIVE);
     // Next day the breather pays again.
-    m.update(501, 0, noHistory());
+    m.update(501, st(0), noHistory());
     Test.assert(m.addBreathBonus());
     // Demo scenario table stays consistent with the status logic.
     var row = DemoScenarios.row(7);
@@ -314,7 +314,7 @@ function curiosityRewardsNewBestsAndSpotsRoutine(logger as Logger) as Boolean {
     Test.assertEqual(Vitals.curiosityState(900000, 0, [[1, 1]] as Array<Array<Number?> >), Vitals.CURIOUS_CONTENT); // too little history
     // Explorer bonus is once per day.
     var m = new MonkeyModel();
-    m.update(700, 0, noHistory());
+    m.update(700, st(0), noHistory());
     Test.assert(m.addExploreBonus());
     Test.assert(!m.addExploreBonus());
     Test.assertEqual(m.getXp(), MonkeyModel.XP_EXPLORE);

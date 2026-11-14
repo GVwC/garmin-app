@@ -474,4 +474,21 @@ module MonkeyArt {
             ]]
         ];
     }
+
+    // ---------- level accessories (drawn on top of any pose) ----------
+
+    // Level 3: a leaf sprouting on the head.
+    function leafAccessory() as Array {
+        return [[10, -4, ["..KGGK", ".KGGK.", "KGK...", ".K...."]]];
+    }
+
+    // Level 6: red headband with knot.
+    function bandAccessory() as Array {
+        return [[5, 2, ["RRRRRRRRRRRRRR"]], [19, 1, ["RR.", ".RR", "R.R"]]];
+    }
+
+    // Level 10: golden crown.
+    function crownAccessory() as Array {
+        return [[7, -4, ["Y..Y..Y..Y", "YY.YY.YYYY", "YYYYYYYYYY", "YRYYWYYRYY"]]];
+    }
 }

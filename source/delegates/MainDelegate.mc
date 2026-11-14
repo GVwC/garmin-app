@@ -2,9 +2,9 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 
 // fenix 7 Pro buttons via BehaviorDelegate:
-//   START (or tap)  -> onSelect       : goal picker, or the breathing screen when stressed/alert
-//   hold UP (MENU)  -> onMenu         : app menu (goal, breathe, reminders, demo)
-//   UP / DOWN       -> previous/next  : demo stages (demo only)
+//   START (or tap)  -> onSelect       : goals, or the breathing screen when stressed/alert/breath low
+//   hold UP (MENU)  -> onMenu         : app menu (goals, breathe, character, reminders, demo)
+//   UP / DOWN       -> previous/next  : demo stages; in live mode cycle the shown goal
 //   BACK            -> onBack         : leave demo; in live mode exit the app
 class MainDelegate extends WatchUi.BehaviorDelegate {
 
@@ -24,7 +24,7 @@ class MainDelegate extends WatchUi.BehaviorDelegate {
             var breath = new BreathView(_model);
             WatchUi.pushView(breath, new BreathDelegate(breath, _view), WatchUi.SLIDE_UP);
         } else {
-            WatchUi.pushView(Menus.goalTypeMenu(_model), new GoalTypeMenuDelegate(_model, _view), WatchUi.SLIDE_UP);
+            WatchUi.pushView(Menus.goalsMenu(_model, false), new GoalsMenuDelegate(_model, _vitals, _view), WatchUi.SLIDE_UP);
         }
         return true;
     }
@@ -36,7 +36,7 @@ class MainDelegate extends WatchUi.BehaviorDelegate {
 
     function onNextPage() as Boolean {
         if (!_model.isDemo()) {
-            return false;
+            return showGoal(1);
         }
         _model.nextDemoStage();
         Log.debug("demo stage " + _model.getDemoStage());
@@ -46,10 +46,19 @@ class MainDelegate extends WatchUi.BehaviorDelegate {
 
     function onPreviousPage() as Boolean {
         if (!_model.isDemo()) {
-            return false;
+            return showGoal(-1);
         }
         _model.prevDemoStage();
         Log.debug("demo stage " + _model.getDemoStage());
+        _view.onModelChanged();
+        return true;
+    }
+
+    private function showGoal(step as Number) as Boolean {
+        if (_model.enabledGoals().size() < 2) {
+            return false;
+        }
+        _model.showNext(step);
         _view.onModelChanged();
         return true;
     }

@@ -40,7 +40,7 @@ class BreathView extends WatchUi.View {
 
     function onLayout(dc as Dc) as Void {
         _runs = PixelSprite.compile([MonkeyArt.body(), MonkeyArt.breathePose()]);
-        _colors = PixelSprite.palette();
+        _colors = PixelSprite.paletteFor(_model.getFur());
         var sIn = WatchUi.loadResource(Rez.Strings.BreathIn) as String;
         var sHold = WatchUi.loadResource(Rez.Strings.BreathHold) as String;
         var sOut = WatchUi.loadResource(Rez.Strings.BreathOut) as String;

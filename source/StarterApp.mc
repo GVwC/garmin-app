@@ -24,9 +24,12 @@ class StarterApp extends Application.AppBase {
 
     (:typecheck([disableBackgroundCheck, disableGlanceCheck]))
     function getInitialView() as [Views] or [Views, InputDelegates] {
-        var pair = $.createDashboard();
-        _view = pair[0] as MainView;
-        return pair;
+        return $.createDashboard();
+    }
+
+    (:typecheck([disableBackgroundCheck, disableGlanceCheck]))
+    function setView(view as MainView) as Void {
+        _view = view;
     }
 
     (:typecheck(disableGlanceCheck))
@@ -50,13 +53,29 @@ class StarterApp extends Application.AppBase {
 }
 
 // Foreground-only construction, kept outside the background-capable app class.
+// First launch shows character setup (fur -> goals); afterwards the dashboard.
 function createDashboard() as [Views, InputDelegates] {
     var model = new MonkeyModel();
     model.load();
     var vitals = new VitalsModel();
     vitals.load();
     Reminders.sync(vitals.isEnabled());
-    Log.debug("start goal=" + model.getGoalType() + "/" + model.getTarget() + " xp=" + model.getXp());
+    Log.debug("start goals=" + model.enabledGoals().size() + " xp=" + model.getXp() + " created=" + model.isCreated());
+    if (!model.isCreated()) {
+        return [Menus.furMenu(model, true), new FurMenuDelegate(model, vitals, null)];
+    }
     var view = new MainView(model, vitals);
+    $.registerView(view);
     return [view, new MainDelegate(model, vitals, view)];
+}
+
+// End of first-run setup: replace the setup menu with the dashboard.
+function openDashboard(model as MonkeyModel, vitals as VitalsModel) as Void {
+    var view = new MainView(model, vitals);
+    $.registerView(view);
+    WatchUi.switchToView(view, new MainDelegate(model, vitals, view), WatchUi.SLIDE_IMMEDIATE);
+}
+
+function registerView(view as MainView) as Void {
+    (Application.getApp() as StarterApp).setView(view);
 }

@@ -45,6 +45,8 @@ class MainView extends WatchUi.View {
 
     // Cached in onLayout.
     private var _body as Array<Number> = [];
+    private var _accessories as Array<Array<Number>?> = [null, null, null];
+    private var _fur as Number = 0;
     private var _poses as Array<Array<Number>?> = [];
     private var _colors as Array<Number> = [];
     private var _bounce as Array<Number> = [0, -3, -6, -8, -9, -8, -6, -3, 0, -2, -3, -2, 0];
@@ -66,7 +68,8 @@ class MainView extends WatchUi.View {
         // (compiling everything at once trips the watchdog).
         _body = PixelSprite.compile([MonkeyArt.body()]);
         _poses = new Array<Array<Number>?>[MonkeyStatus.POSE_COUNT];
-        _colors = PixelSprite.palette();
+        _colors = PixelSprite.paletteFor(_model.getFur());
+        _fur = _model.getFur();
         _labels = strs([Rez.Strings.GoalSteps, Rez.Strings.GoalActive, Rez.Strings.GoalFloors]);
         _units = strs([Rez.Strings.UnitSteps, Rez.Strings.UnitActive, Rez.Strings.UnitFloors]);
         _titles = strs([Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
@@ -142,8 +145,34 @@ class MainView extends WatchUi.View {
     }
 
     private function drawSprite(dc as Dc, pose as Number, x as Number, y as Number, scale as Number) as Void {
+        if (_fur != _model.getFur()) {
+            _fur = _model.getFur();
+            _colors = PixelSprite.paletteFor(_fur);
+        }
         PixelSprite.draw(dc, _body, _colors, x, y, scale);
         PixelSprite.draw(dc, poseRuns(pose), _colors, x, y, scale);
+        var acc = accessoryIndex(_model.getLevel());
+        if (acc >= 0) {
+            var runs = _accessories[acc];
+            if (runs == null) {
+                var patches = [MonkeyArt.leafAccessory(), MonkeyArt.bandAccessory(), MonkeyArt.crownAccessory()][acc];
+                runs = PixelSprite.compile([patches]);
+                _accessories[acc] = runs;
+            }
+            PixelSprite.draw(dc, runs, _colors, x, y, scale);
+        }
+    }
+
+    // Evolution: leaf from level 3, headband from 6, crown from 10.
+    static function accessoryIndex(level as Number) as Number {
+        if (level >= 10) {
+            return 2;
+        } else if (level >= 6) {
+            return 1;
+        } else if (level >= 3) {
+            return 0;
+        }
+        return -1;
     }
 
     private static function str(id as ResourceId) as String {
@@ -185,8 +214,7 @@ class MainView extends WatchUi.View {
 
     // Goal value every call; vitals when forced or VITALS_MS has passed.
     function refresh(withVitals as Boolean) as Void {
-        var type = _model.getGoalType();
-        _model.update(DayClock.today(), ActivityService.todayValue(type), ActivityHistory.days(type));
+        _model.update(DayClock.today(), ActivityService.todayValues(), ActivityHistory.days());
         _sinceRefreshMs = 0;
         if (withVitals || _sinceVitalsMs >= VITALS_MS) {
             refreshVitals();
@@ -428,6 +456,49 @@ class MainView extends WatchUi.View {
             dc.drawText(cx, 30, Graphics.FONT_XTINY, t, center);
         }
         drawSegments(dc, cx - 40, 44, 80, 5, 10, _model.getLevelPermille(), 0x55AAFF);
+        drawStreak(dc, cx);
+        drawGoalChips(dc, cx);
+    }
+
+    // Flame + days in a row with every goal met (right of the XP bar).
+    private function drawStreak(dc as Dc, cx as Number) as Void {
+        var streak = _model.getStreak();
+        if (streak < 1) {
+            return;
+        }
+        var x = cx + 46;
+        var y = 38;
+        dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(x + 2, y, 2, 2);
+        dc.fillRectangle(x + 1, y + 2, 4, 2);
+        dc.fillRectangle(x, y + 4, 6, 4);
+        dc.setColor(0xFFFF00, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(x + 2, y + 5, 2, 3);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x + 9, y + 4, Graphics.FONT_XTINY, streak.toString(),
+            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+    }
+
+    // One chip per enabled goal (yellow = met); the goal on the counter is outlined.
+    private function drawGoalChips(dc as Dc, cx as Number) as Void {
+        var goals = _model.enabledGoals();
+        var n = goals.size();
+        if (n < 2) {
+            return;
+        }
+        var w = 12;
+        var gap = 6;
+        var x = cx - (n * w + (n - 1) * gap) / 2;
+        for (var i = 0; i < n; i++) {
+            var t = goals[i];
+            if (t == _model.getGoalType()) {
+                dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+                dc.fillRectangle(x - 2, 54, w + 4, 10);
+            }
+            dc.setColor(_model.isMet(t) ? 0xFFFF00 : 0x555555, Graphics.COLOR_TRANSPARENT);
+            dc.fillRectangle(x, 56, w, 6);
+            x += w + gap;
+        }
     }
 
     // Energy (bolt, left) and Calm (heart, right): vertical 8-block meters.

@@ -8,7 +8,16 @@ module ActivityService {
 
     // Today's value for the goal type, or null when the watch has no reading.
     function todayValue(goalType as Number) as Number? {
+        return valueOf(ActivityMonitor.getInfo(), goalType);
+    }
+
+    // Today's values for every goal type, index = goal type.
+    function todayValues() as Array<Number?> {
         var info = ActivityMonitor.getInfo();
+        return [valueOf(info, Goals.GOAL_STEPS), valueOf(info, Goals.GOAL_ACTIVE), valueOf(info, Goals.GOAL_FLOORS)];
+    }
+
+    function valueOf(info as ActivityMonitor.Info, goalType as Number) as Number? {
         if (goalType == Goals.GOAL_ACTIVE) {
             var am = info.activeMinutesDay;
             return (am != null) ? am.total : null;
@@ -33,8 +42,8 @@ module ActivityHistory {
         return Vitals.curiosityState(info.distance, info.floorsClimbed, past);
     }
 
-    // Max 7 days, newest first, as [day, value or null].
-    function days(goalType as Number) as Array<Array<Number?> > {
+    // Max 7 days, newest first, as [day, steps, activeMinutes, floors].
+    function days() as Array<Array<Number?> > {
         var out = [] as Array<Array<Number?> >;
         var hist = ActivityMonitor.getHistory();
         var today = DayClock.today();
@@ -42,16 +51,8 @@ module ActivityHistory {
             var h = hist[i];
             var start = h.startOfDay;
             var day = (start != null) ? DayClock.dayOfMoment(start) : today - 1 - i;
-            var v = null as Number?;
-            if (goalType == Goals.GOAL_ACTIVE) {
-                var am = h.activeMinutes;
-                v = (am != null) ? am.total : null;
-            } else if (goalType == Goals.GOAL_FLOORS) {
-                v = h.floorsClimbed;
-            } else {
-                v = h.steps;
-            }
-            out.add([day, v] as Array<Number?>);
+            var am = h.activeMinutes;
+            out.add([day, h.steps, (am != null) ? am.total : null, h.floorsClimbed] as Array<Number?>);
         }
         return out;
     }

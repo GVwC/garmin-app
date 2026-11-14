@@ -41,17 +41,23 @@ Data flow (app): **input → delegate → model → `MainView.onModelChanged()` 
 | `resources/strings` | all text; `scope="background"` / `scope="glance"` where needed | |
 | `tests` | `(:test)` functions | Built only with `--unit-test` |
 
-## Goal and XP (MonkeyModel)
+## Character, goals and XP (MonkeyModel)
+
+First launch (`createDashboard`): character setup instead of the dashboard — fur colour (`furMenu`) → goals (`goalsMenu` with "Done") → `openDashboard()` switches to the dashboard. The same menus are reachable later (Hold UP → Character / Goals, START → Goals). Players from the single-goal version are migrated (their goal becomes the only enabled one, the character counts as created).
+
+Goals: Steps / Active minutes / Floors, each on/off with its own target (at least one stays on). One goal is *shown* on the counter (UP/DOWN cycles); chips under the XP bar show every enabled goal (yellow = met, outlined = shown). The pose uses all goals: eat when every goal is met, perk up at ≥ 50 % average progress.
 
 | Rule | Value |
 |---|---|
-| Goal reached today (live) | +100 XP once per local day; celebration once |
-| Finished day settled from 7-day history | met +100 (unless already rewarded), missed −50, no data → 0 |
+| Each enabled goal reached today (live) | +100 XP once per local day; celebration once (several goals add up in one banner) |
+| Finished day settled from 7-day history | per enabled goal: met +100 (unless already rewarded), missed −50, no data → 0 |
+| Streak | consecutive days with every enabled goal met; completing today on day 2+ adds +10 × days (max ×5) |
 | Revived from tiredness | +20 XP, max 3 per day |
 | Finished breathing session | +10 XP, once per day |
 | New territory (Curiosity) | +30 XP, once per day |
 | Level | 1 + XP / 300; XP never below 0 |
-| Goal poses | < 50 % relax · 50–99 % perk · ≥ 100 % eat |
+| Evolution | leaf from level 3, headband from 6, crown from 10 (accessory patches drawn over any pose) |
+| Fur | Brown / Golden / Silver / Shadow: swaps the `B` and `D` palette entries |
 
 ## Vitals (Vitals, VitalsModel)
 

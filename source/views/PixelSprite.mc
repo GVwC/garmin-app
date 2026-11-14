@@ -23,6 +23,17 @@ module PixelSprite {
         ];
     }
 
+    // Palette with the character's fur (B) and dark fur (D): brown, golden, silver, shadow.
+    function paletteFor(fur as Number) as Array<Number> {
+        var p = palette();
+        var furs = [[0xAA5500, 0x550000], [0xFFAA00, 0xAA5500], [0xAAAAAA, 0x555555], [0x555555, 0x000000]];
+        if (fur >= 0 && fur < furs.size()) {
+            p[1] = furs[fur][0];
+            p[2] = furs[fur][1];
+        }
+        return p;
+    }
+
     // layers: list of patch lists (body first, then pose); later patches paint over earlier ones.
     function compile(layers as Array<Array>) as Array<Number> {
         var out = [] as Array<Number>;

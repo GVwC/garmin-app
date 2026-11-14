@@ -7,8 +7,10 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 
 ## Features
 
-- **Daily goal** feeding the monkey: Steps (1k / 3k / **5k** / 10k), Active minutes (10 / 20 / 30 / 60) or Floors (5 / 10 / 15 / 25). Garmin's midnight-reset totals.
-- **XP and levels:** goal +100, missed day −50 (settled from the 7-day history even if the app wasn't opened), revived +20 (max 3/day), breathing session +10 (1/day). 300 XP per level.
+- **Create your character:** first launch asks for a fur colour (Brown, Golden, Silver, Shadow) and which goals feed the monkey; both can be changed later from the menu.
+- **Goals that give XP:** any of Steps (1k / 3k / **5k** / 10k), Active minutes (10 / 20 / 30 / 60) and Floors (5 / 10 / 15 / 25), each with its own target. Garmin's midnight-reset totals. UP/DOWN switches the goal on the counter; chips under the XP bar show which are met.
+- **XP and levels:** each goal met +100, each goal missed −50 (settled from the 7-day history even if the app wasn't opened), streak bonus +10 × days (up to ×5) when every goal is met, revived +20 (max 3/day), breathing session +10 (1/day), new territory +30 (1/day). 300 XP per level.
+- **Evolution:** the monkey earns a leaf (level 3), a headband (level 6) and a crown (level 10). A flame shows the streak.
 - **Energy vital** (move bar + Body Battery): Rested · Low recharge · Inactive (~90 min still) · Exhausted · Night — with "Revived" when you recover.
 - **Calm vital** (Garmin stress + wrist HR vs resting HR, cross-checked with cadence so workouts are never stress): Calm · Alert · Stressed · Exercising.
 - **Breath vital** (Pulse Ox history, read-only, non-diagnostic): Normal · Low · Concerning.
@@ -25,9 +27,9 @@ Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHI
 
 | Button | Dashboard | Demo | Breathing |
 |---|---|---|---|
-| **START** (or tap) | Goal picker — or **Breathe** when stressed/alert | same | Restart when finished |
-| **Hold UP** (menu) | Goal · Breathe · Reminders on/off · Demo mode | same | — |
-| **UP / DOWN** | — | Previous / next scenario | — |
+| **START** (or tap) | Goals — or **Breathe** when stressed/alert/out of breath | same | Restart when finished |
+| **Hold UP** (menu) | Goals · Breathe · Character · Reminders on/off · Demo mode | same | — |
+| **UP / DOWN** | Switch the goal on the counter (2+ goals) | Previous / next scenario | — |
 | **BACK** | Exit app | Leave demo | Back to dashboard |
 
 Demo scenarios: goal 20 % → 65 % → reached (+XP, bounce) → missed day (−XP) → still 90 min → still 2 h → low recharge → exhausted → alert → stressed → exercising → breath low → breath low again → cold → hot → adventurous (+XP) → routine → revived (+XP).

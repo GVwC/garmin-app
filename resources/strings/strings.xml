@@ -64,7 +64,7 @@
     <string id="Breathed">Breather done</string>
     <string id="Explored">New territory!</string>
 
-    <string id="HintLive">START: goal</string>
+    <string id="HintLive">START: goals</string>
     <string id="HintMenu">Hold UP: menu</string>
     <string id="HintDemo">UP/DOWN  BACK exit</string>
     <string id="Demo">DEMO</string>
@@ -90,14 +90,23 @@
     <string id="Dm17">revived</string>
 
     <string id="MenuTitle">Monkey Miles</string>
-    <string id="MenuGoal">Goal</string>
+    <string id="MenuGoals">Goals</string>
+    <string id="MenuCharacter">Character</string>
+    <string id="Off">Off</string>
+    <string id="Done">Done - let's go!</string>
+    <string id="PickFur">Fur colour</string>
+    <string id="PickFurSetup">Pick your monkey</string>
+    <string id="PickGoals">Goals that feed me</string>
+    <string id="PickGoalsSetup">What feeds me?</string>
+    <string id="Fur0">Brown</string>
+    <string id="Fur1">Golden</string>
+    <string id="Fur2">Silver</string>
+    <string id="Fur3">Shadow</string>
     <string id="MenuBreathe">Breathe</string>
     <string id="MenuBreatheSub">1 min box breathing</string>
     <string id="MenuReminders">Reminders</string>
     <string id="MenuRemindersSub">Every 30 min, not at night</string>
     <string id="MenuDemo">Demo mode</string>
-    <string id="PickGoal">Feed me with</string>
-    <string id="PickTarget">Daily target</string>
 
     <string id="BreathIn">Breathe in</string>
     <string id="BreathHold">Hold</string>
