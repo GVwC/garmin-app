@@ -1,0 +1,7 @@
+<strings>
+    <string id="AppName">Garmin Starter</string>
+    <string id="Title">Garmin Starter</string>
+    <string id="Status">Ready to Build</string>
+    <string id="PressesLabel">Presses</string>
+    <string id="Hint">START: press  BACK: exit</string>
+</strings>

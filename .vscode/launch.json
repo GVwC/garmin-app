@@ -1,0 +1,28 @@
+{
+    // Debug configurations provided by the Garmin Monkey C extension (type "monkeyc").
+    // F5 builds, starts the simulator if needed, and launches/debugs the app.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "monkeyc",
+            "request": "launch",
+            "name": "Run App (fenix 7 Pro)",
+            "stopAtLaunch": false,
+            "device": "fenix7pro"
+        },
+        {
+            "type": "monkeyc",
+            "request": "launch",
+            "name": "Run Tests (fenix 7 Pro)",
+            "runTests": true,
+            "device": "fenix7pro"
+        },
+        {
+            "type": "monkeyc",
+            "request": "launch",
+            "name": "Run App (choose device)",
+            "stopAtLaunch": false,
+            "device": "${command:GetTargetDevice}"
+        }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    // Workspace-only Monkey C settings. The developer key path stays in your
+    // VS Code *user* settings (monkeyC.developerKeyPath) and is never committed.
+    "monkeyC.typeCheckLevel": "Strict",
+    "monkeyC.jungleFiles": "monkey.jungle"
+}

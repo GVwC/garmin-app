@@ -1,0 +1,28 @@
+# Build output (VS Code extension and scripts/ciq.ps1 both write to bin/)
+bin/
+*.prg
+*.prg.debug.xml
+*.iq
+*.zip
+gen/
+mir/
+internal-mir/
+external-mir/
+
+# Signing keys and secrets - never commit
+developer_key*
+*.der
+*.pem
+*.key
+*.p12
+.env
+.env.*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.json
