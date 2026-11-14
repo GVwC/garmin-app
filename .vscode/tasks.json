@@ -1,5 +1,5 @@
 {
-    // Thin wrappers around scripts/ciq.ps1 so the same commands are on keyboard shortcuts.
+    // Thin wrappers around scripts/ciq.ps1 (Windows) / scripts/ciq.sh (macOS, Linux) so the same commands are on keyboard shortcuts.
     // Ctrl+Shift+B = Build (default build task). F5 (launch.json) = run/debug in the simulator.
     // Terminal > Run Task... lists the rest. Compiler errors/warnings go to the Problems panel.
     "version": "2.0.0",
@@ -16,6 +16,8 @@
             "label": "CIQ: Build",
             "type": "shell",
             "command": ".\\scripts\\ciq.ps1 build",
+            "osx": { "command": "./scripts/ciq.sh build" },
+            "linux": { "command": "./scripts/ciq.sh build" },
             "group": { "kind": "build", "isDefault": true },
             "problemMatcher": { "owner": "monkeyc", "fileLocation": "absolute", "pattern": { "regexp": "^(ERROR|WARNING): (?:[^:]+: )?(.*?):(\\d+),(\\d+): (.*)$", "severity": 1, "file": 2, "line": 3, "column": 4, "message": 5 } }
         },
@@ -23,6 +25,8 @@
             "label": "CIQ: Test",
             "type": "shell",
             "command": ".\\scripts\\ciq.ps1 test",
+            "osx": { "command": "./scripts/ciq.sh test" },
+            "linux": { "command": "./scripts/ciq.sh test" },
             "group": { "kind": "test", "isDefault": true },
             "problemMatcher": { "owner": "monkeyc", "fileLocation": "absolute", "pattern": { "regexp": "^(ERROR|WARNING): (?:[^:]+: )?(.*?):(\\d+),(\\d+): (.*)$", "severity": 1, "file": 2, "line": 3, "column": 4, "message": 5 } }
         },
@@ -30,6 +34,8 @@
             "label": "CIQ: Run in simulator (log in terminal)",
             "type": "shell",
             "command": ".\\scripts\\ciq.ps1 run",
+            "osx": { "command": "./scripts/ciq.sh run" },
+            "linux": { "command": "./scripts/ciq.sh run" },
             "problemMatcher": { "owner": "monkeyc", "fileLocation": "absolute", "pattern": { "regexp": "^(ERROR|WARNING): (?:[^:]+: )?(.*?):(\\d+),(\\d+): (.*)$", "severity": 1, "file": 2, "line": 3, "column": 4, "message": 5 } },
             "presentation": { "panel": "dedicated" }
         },
@@ -37,12 +43,16 @@
             "label": "CIQ: Start simulator",
             "type": "shell",
             "command": ".\\scripts\\ciq.ps1 sim",
+            "osx": { "command": "./scripts/ciq.sh sim" },
+            "linux": { "command": "./scripts/ciq.sh sim" },
             "problemMatcher": []
         },
         {
             "label": "CIQ: Clean",
             "type": "shell",
             "command": ".\\scripts\\ciq.ps1 clean",
+            "osx": { "command": "./scripts/ciq.sh clean" },
+            "linux": { "command": "./scripts/ciq.sh clean" },
             "problemMatcher": []
         }
     ]

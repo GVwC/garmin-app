@@ -63,6 +63,32 @@ If PowerShell says scripts are disabled, run this once in the same window (affec
 Set-ExecutionPolicy -Scope Process Bypass
 ```
 
+## Option C: macOS / Linux terminal
+
+Same tasks as Option B. Needs a Java runtime (`brew install openjdk@17` on macOS; the script finds it).
+
+```bash
+./scripts/ciq.sh build     # compile -> bin/GarminStarter.prg
+```
+
+```bash
+./scripts/ciq.sh run       # compile + open simulator + launch app (Ctrl+C to stop log)
+```
+
+```bash
+./scripts/ciq.sh test      # unit tests in the simulator
+```
+
+```bash
+./scripts/ciq.sh sim       # just open the simulator
+```
+
+```bash
+./scripts/ciq.sh clean     # delete bin/
+```
+
+In VS Code on macOS, Ctrl+Shift+B / Run Task use `ciq.sh` automatically.
+
 ## Put the app on your watch
 
 ```powershell

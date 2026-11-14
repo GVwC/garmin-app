@@ -15,6 +15,14 @@ It shows a climbing clock: three climbers scale rock walls for hours, minutes an
 .\scripts\ciq.ps1 run     # build + launch in the simulator
 ```
 
+**Terminal (macOS / Linux):**
+
+```bash
+./scripts/ciq.sh build
+./scripts/ciq.sh test
+./scripts/ciq.sh run
+```
+
 ## Docs
 
 | File | What it covers |
