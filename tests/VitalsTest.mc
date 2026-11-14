@@ -13,6 +13,7 @@ function snap() as VitalsSnapshot {
     s.heartRate = 62;
     s.bodyBattery = 70;
     s.bbPeakToday = 85;
+    s.bbAgeMin = 3;
     s.moveBar = 0;
     s.stress = 20;
     return s;
@@ -333,5 +334,26 @@ function newVitalsNudgeWithPriority(logger as Logger) as Boolean {
     Test.assertEqual(vm.getWarmth(), Vitals.WARMTH_COLD);
     Test.assertEqual(vm.pickNudge(s, 800, t), VitalsModel.NUDGE_BREATH);
     Test.assertEqual(vm.pickNudge(s, 800, t + 46 * 60), VitalsModel.NUDGE_COLD);
+    return true;
+}
+
+(:test)
+function lowRechargeNeedsFreshHistory(logger as Logger) as Boolean {
+    var s = snap();
+    s.bbPeakToday = 38;
+    Test.assertEqual(Vitals.energyState(s, false), Vitals.ENERGY_LOW_RECHARGE);
+    // Stale history (newest sample 3 h old) never triggers it by itself.
+    s.bbAgeMin = 180;
+    Test.assertEqual(Vitals.energyState(s, false), Vitals.ENERGY_RESTED);
+    // Unknown age or no Body Battery history at all: no low recharge either.
+    s.bbAgeMin = null;
+    Test.assertEqual(Vitals.energyState(s, false), Vitals.ENERGY_RESTED);
+    var empty = new VitalsSnapshot();
+    empty.minuteOfDay = 600;
+    Test.assertEqual(Vitals.energyState(empty, false), Vitals.ENERGY_RESTED);
+    // Stale history combined with a long sit is "still", not "exhausted".
+    s.bbAgeMin = 180;
+    s.moveBar = 3;
+    Test.assertEqual(Vitals.energyState(s, false), Vitals.ENERGY_INACTIVE);
     return true;
 }

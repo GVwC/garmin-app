@@ -10,6 +10,7 @@ class VitalsSnapshot {
     var bodyBattery as Number? = null;  // latest Body Battery 0..100
     var bbPeakToday as Number? = null;  // highest Body Battery since midnight (recharge proxy)
     var bbRecentGain as Number? = null; // latest minus lowest Body Battery in the last 3 h (rest / nap)
+    var bbAgeMin as Number? = null;     // minutes since the newest Body Battery sample (null = unknown)
     var moveBar as Number? = null;      // Garmin move bar level, 0..5 (1 = 60 min still, +1 per 15 min)
     var stress as Number? = null;       // Garmin stress 0..100 (not computed during activity)
     var stressSustained as Boolean = false; // every stress sample of the last ~5 min >= STRESS_HIGH
@@ -30,8 +31,9 @@ class VitalsSnapshot {
 //
 // Energy (movement + recharge)
 //   SLEEPING       outside the user's wake window (night): monkey sleeps, no nudges
-//   LOW_RECHARGE   today's Body Battery peak < RECHARGE_MIN (proxy for a short/poor night;
-//                  Connect IQ cannot read sleep data). Clears after a rest/nap gain or tomorrow.
+//   LOW_RECHARGE   "low morning recharge": today's Body Battery peak < RECHARGE_MIN. Not a sleep
+//                  measurement (this watch exposes no sleep data to apps). Needs fresh history
+//                  (newest sample <= BB_FRESH_MIN old). Clears after a rest/nap gain or tomorrow.
 //   INACTIVE       move bar >= INACTIVE_LEVEL (~90 min without moving). Clears when Garmin clears
 //                  the move bar (a few minutes of walking).
 //   EXHAUSTED      LOW_RECHARGE and INACTIVE together.
@@ -80,6 +82,7 @@ module Vitals {
     const RECHARGE_MIN = 50;       // Body Battery peak below this = low recharge
     const RECHARGE_GRACE_MIN = 60; // judge recharge only 1 h after wake time
     const NAP_GAIN = 10;           // Body Battery gain that counts as a recovering rest
+    const BB_FRESH_MIN = 120;      // older Body Battery history is not trusted for recharge
     const INACTIVE_LEVEL = 3;      // move bar level ~ 90 min still
     const DEEP_INACTIVE_LEVEL = 5; // ~ 2 h still: monkey falls asleep sitting up
     const MOVING_CADENCE = 60;     // steps/min that count as moving
@@ -121,6 +124,11 @@ module Vitals {
     // rechargeRecovered: a rest/nap already cleared low recharge earlier today (kept by VitalsModel).
     function isLowRecharge(s as VitalsSnapshot, rechargeRecovered as Boolean) as Boolean {
         if (rechargeRecovered || !isAwake(s) || minutesSinceWake(s) < RECHARGE_GRACE_MIN) {
+            return false;
+        }
+        // Missing or stale history never triggers low recharge by itself.
+        var age = s.bbAgeMin;
+        if (age == null || age > BB_FRESH_MIN) {
             return false;
         }
         var peak = s.bbPeakToday;

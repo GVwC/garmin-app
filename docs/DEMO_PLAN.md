@@ -11,21 +11,21 @@ Goal: a 3–4 minute demo that takes judges from **creating a monkey** (egg → 
 | Successful pet-fitness apps start by **hatching**, then the pet **visibly grows** with consistency; streak milestones and cosmetics keep people coming back. ([CalPets](https://www.trendhunter.com/trends/calpets), [Streaksy](https://peerpush.net/p/streaksy-app), [Mochi](https://apps.apple.com/bb/app/id6759009775), [Tep](https://techcrunch.com/2015/08/31/tep-is-an-adorable-fitness-tracking-app-that-works-like-a-tamagotchi)) | Egg → baby → kid → adult → crowned, driven by level; hatching is the emotional hook of the setup. |
 | The simulator can drive steps live: *Simulation → Activity Monitoring → Set Steps Per Minute*; steps 0 + *Fast Forward* fills the move bar (60/75/90/105/120 min). FIT *Simulate Data* covers sensors. ([forum](https://forums.garmin.com/developer/connect-iq/f/discussion/247/movebarlevel---how-to-simulate), [forum](https://forums.garmin.com/developer/connect-iq/f/discussion/6595/move-bar-simulator), [forum](https://forums.garmin.com/developer/connect-iq/f/discussion/3794/playback-fit-file-in-simulator/28917)) | Live part: set 120 steps/min and watch the counter climb. |
 | Simulator gaps: active minutes not set, odd history `startOfDay`, no midnight reset. ([forum](https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-activeminutesday-activeminutesweek-are-not-set-in-simulator), [forum](https://forums.garmin.com/developer/connect-iq/i/bug-reports/smulator-activitymonitor-history-startofday-is-incorrect-successive-entries-are-1-second-apart)) | Stress, Pulse Ox, cold, streaks, evolution come from the scripted story, clearly labelled. Live part sticks to steps (+ move bar). |
-| Connect IQ has no sleep API; notifications aren't listed for fēnix 7 Pro; background wakes need a real watch to judge. (see ARCHITECTURE.md) | Say it honestly in the pitch: Body Battery stands in for sleep; the reminder is shown as a story screen (the same screen opens on the watch after a background wake). |
+| The fēnix 7 Pro (API 5.2.0, SDK 9.1.0) exposes no sleep data; a sleep-score complication is reported only from API 6.0.2 on newer devices. Notifications aren't listed for fēnix 7 Pro; background wakes need a real watch to judge. (see ARCHITECTURE.md) | Say it honestly in the pitch: we show *low morning recharge* from Body Battery, never a sleep claim; the reminder is shown as a story screen (the same screen opens on the watch after a background wake). |
 
 ## 2. The demo in five chapters
 
-Story mode starts **by itself right after hatching** (or Hold UP → *Story demo*) and plays a scripted day; **DOWN** = next scene, **UP** = previous, **BACK** = leave. Full-screen moments open automatically when their scene is entered.
+Story mode starts **by itself right after hatching** (or Hold UP → *Story demo*) and plays a scripted day, marked by a STORY badge at the top; **DOWN** = next scene, **UP** = previous, **BACK** = leave. Full-screen moments open automatically when their scene is entered.
 
 | Time | Chapter / screen | What the presenter says / does | Real or scripted |
 |---|---|---|---|
-| 0:00–0:20 | (slide) | Problem: step totals are easy to ignore; long sitting, stress, short nights. | — |
+| 0:00–0:20 | (slide) | Problem: step totals are easy to ignore; long sitting, stress, poor recovery. | — |
 | **0:20–1:15** | **1. Create your monkey** | | Real app flow |
 | | Welcome: wobbling egg, "Hatch your companion" | "Everyone starts with an egg." START. | |
 | | Name → Fur (UP/DOWN recolours the egg's spots) → Goals (Steps, Active min, Floors; each with a target) → Done | "You choose what feeds your monkey." | |
 | | Hatching: wobble, two cracks, baby pops out of its shell with sparkles, "Momo hatched!" | Pause for the reaction. START → the story begins at 07:30. | |
 | **1:15–2:00** | **2. Steps, states and reminders** (story scenes 0–4) | | Scripted, labelled STORY |
-| | 07:30 short night → yawning monkey, "Ease in, bed early" | "No sleep API on Connect IQ — Body Battery tells us the recharge was poor." | |
+| | 07:30 *Low morning recharge* → yawning monkey, "Body Battery 38/100" | "This watch doesn't share sleep data with apps, so we don't guess sleep — Body Battery says the morning recharge was low." | |
 | | 10:30 still 90 min → **Reminder screen**: buzz, shaking tired monkey, "Momo needs you!" | "This is what the background check sends — on the watch it wakes the app." BACK = later. | |
 | | 10:40 walk → steps **count up**, monkey jogs; 10:45 *I'm back! +20 XP* | | |
 | | 13:00 under half → **Reminder screen** (hungry, banana dropped) | "Half the day, under half the goal." | |

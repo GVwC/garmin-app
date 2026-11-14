@@ -15,7 +15,7 @@
     <string id="St2" scope="glance">Stressed</string>
     <string id="St3" scope="glance">Fell asleep sitting</string>
     <string id="St4" scope="glance">Still for 90 min</string>
-    <string id="St5" scope="glance">Low recharge</string>
+    <string id="St5" scope="glance">Low morning recharge</string>
     <string id="St6" scope="glance">HR up, not moving</string>
     <string id="St7" scope="glance">On the move!</string>
     <string id="St8" scope="glance">SpO2 low for a bit</string>
@@ -36,7 +36,7 @@
     <string id="Ac7">Good stress, go!</string>
     <string id="Ac8">Lasts? Ask someone</string>
     <string id="Ac9">START: slow breaths</string>
-    <string id="Ac10">Head somewhere warm</string>
+    <string id="Ac10">Go somewhere warm</string>
     <string id="Ac11">Water and shade</string>
     <string id="Ac12">Explorer bonus!</string>
     <string id="Ac13">New direction today?</string>
@@ -45,7 +45,7 @@
     <string id="Nudge0" scope="background">Running on empty. Walk 5 min now and go to bed early tonight.</string>
     <string id="Nudge1" scope="background">Your monkey is stressed. Open it for a 1-minute breather.</string>
     <string id="Nudge2" scope="background">Still for 90 min. A 5-minute walk wakes your monkey up.</string>
-    <string id="Nudge3" scope="background">Short recharge last night. Ease into today, lights out early.</string>
+    <string id="Nudge3" scope="background">Low morning recharge: your Body Battery is low. Ease into today and wind down early tonight.</string>
     <string id="Nudge4" scope="background">Your monkey is hungry: under half your goal so far.</string>
     <string id="Nudge5" scope="background">Your Pulse Ox readings have been low for a bit. Sit down and take slow breaths; if it continues, check in with someone.</string>
     <string id="Nudge6" scope="background">Getting cold out there. Head somewhere warm.</string>
@@ -70,7 +70,7 @@
     <string id="Demo">STORY</string>
 
     <!-- Story scene captions, index = DemoScenarios scene -->
-    <string id="Dm0">07:30 short night</string>
+    <string id="Dm0">07:30 Low morning recharge</string>
     <string id="Dm1">10:30 still 90 min</string>
     <string id="Dm2">10:40 walk it off</string>
     <string id="Dm3">10:45 back on track</string>
@@ -141,6 +141,7 @@
     <string id="BreathAgain">START again  BACK done</string>
     <string id="Hr">HR</string>
     <string id="BreathSkip">START: skip</string>
+    <string id="BodyBattery">Body Battery</string>
     <string id="NeedsYou">needs you!</string>
     <string id="ReminderBreathe">START: breathe now</string>
     <string id="ReminderGo">START: on it!</string>

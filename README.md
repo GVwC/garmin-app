@@ -1,7 +1,7 @@
 # Monkey Miles
 
 A Garmin Connect IQ **watch-app** for the **fēnix 7 Pro** (API 5.2.0, SDK 9.1.0).
-A pixel-art monkey companion that lives on your real watch data: it eats its banana when you hit your daily goal, gets tired when you sit too long or slept badly, gets stressed when your heart rate climbs without movement, and nudges you — with a recovery check, not just a notification.
+A pixel-art monkey companion that lives on your real watch data: it eats its banana when you hit your daily goal, gets tired when you sit too long or your Body Battery recharged poorly, gets stressed when your heart rate climbs without movement, and nudges you — with a recovery check, not just a notification.
 
 > The climbing-clock example that used to live here is kept on the `demo/climbing-clock` branch.
 
@@ -14,7 +14,7 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 - **Goals that give XP:** any of Steps (1k / 3k / **5k** / 10k), Active minutes (10 / 20 / 30 / 60) and Floors (5 / 10 / 15 / 25), each with its own target. Garmin's midnight-reset totals. UP/DOWN switches the goal on the counter; chips under the XP bar show which are met.
 - **XP and levels:** each goal met +100, each goal missed −50 (settled from the 7-day history even if the app wasn't opened), streak bonus +10 × days (up to ×5) when every goal is met, revived +20 (max 3/day), breathing session +10 (1/day), new territory +30 (1/day). 300 XP per level.
 - **Evolution:** the monkey earns a leaf (level 3), a headband (level 6) and a crown (level 10). A flame shows the streak.
-- **Energy vital** (move bar + Body Battery): Rested · Low recharge · Inactive (~90 min still) · Exhausted · Night — with "Revived" when you recover.
+- **Energy vital** (move bar + Body Battery): Rested · Low morning recharge · Inactive (~90 min still) · Exhausted · Night — with "Revived" when you recover.
 - **Calm vital** (Garmin stress + wrist HR vs resting HR, cross-checked with cadence so workouts are never stress): Calm · Alert · Stressed · Exercising.
 - **Breath vital** (Pulse Ox history, read-only, non-diagnostic): Normal · Low · Concerning.
 - **Warmth vital** (watch temperature, conservative for wrist bias): OK · Cold · Hot.
@@ -35,7 +35,7 @@ Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHI
 | **UP / DOWN** | Switch the goal on the counter (2+ goals) | Previous / next scenario | — |
 | **BACK** | Exit app | Leave demo | Back to dashboard |
 
-Story scenes: 07:30 short night → 10:30 still (reminder) → walk (count-up) → back on track (+XP) → 13:00 under half (reminder) → 15:10 stressed (reminder → breathe) → calm → new route (+XP) → 18:00 goals met (evolves) → night → day 2 missed (recap) → journey → extra states.
+Story scenes: 07:30 low morning recharge (Body Battery 38/100) → 10:30 still (reminder) → walk (count-up) → back on track (+XP) → 13:00 under half (reminder) → 15:10 stressed (reminder → breathe) → calm → new route (+XP) → 18:00 goals met (evolves) → night → day 2 missed (recap) → journey → extra states.
 
 ## Build and run
 

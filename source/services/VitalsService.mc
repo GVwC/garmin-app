@@ -94,6 +94,7 @@ module VitalsService {
                 :order => SensorHistory.ORDER_NEWEST_FIRST
             });
             var latest = null as Number?;
+            var latestAt = null as Number?;
             var peak = null as Number?;
             var recentLow = null as Number?;
             var sample = it.next();
@@ -102,6 +103,8 @@ module VitalsService {
                 if (v != null) {
                     if (latest == null) {
                         latest = v;
+                        var at = sample.when;
+                        latestAt = (at != null) ? at.value() : null;
                     }
                     if (peak == null || v > peak) {
                         peak = v;
@@ -115,6 +118,7 @@ module VitalsService {
             }
             s.bodyBattery = latest;
             s.bbPeakToday = peak;
+            s.bbAgeMin = (latestAt != null) ? (now - latestAt) / 60 : null;
             if (latest != null && recentLow != null) {
                 s.bbRecentGain = latest - recentLow;
             }

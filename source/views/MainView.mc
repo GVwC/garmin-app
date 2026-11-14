@@ -110,6 +110,7 @@ class MainView extends WatchUi.View {
             :breathed => str(Rez.Strings.Breathed),
             :explored => str(Rez.Strings.Explored),
             :evolved => str(Rez.Strings.Evolved),
+            :bodyBattery => str(Rez.Strings.BodyBattery),
             :hintLive => str(Rez.Strings.HintLive),
             :hintMenu => str(Rez.Strings.HintMenu),
             :hintDemo => str(Rez.Strings.HintDemo),
@@ -723,9 +724,14 @@ class MainView extends WatchUi.View {
             line2 = text(:hintMenu);
         }
         if (_model.isDemo()) {
-            line1 = text(:demo) + " " + _demoLabels[_model.getDemoStage()];
+            // The STORY badge sits at the top, so the scene caption gets the whole line.
+            dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(cx, 12, Graphics.FONT_XTINY, text(:demo), center);
+            line1 = _demoLabels[_model.getDemoStage()];
             color1 = 0xFFAA00;
-            if (_msg == MonkeyStatus.MSG_NONE) {
+            if (_msg == MonkeyStatus.MSG_LOW_RECHARGE) {
+                line2 = text(:bodyBattery) + " " + demoRow()[DemoScenarios.E_METER] + "/100";
+            } else if (_msg == MonkeyStatus.MSG_NONE) {
                 line2 = text(:hintDemo);
             }
         }

@@ -77,16 +77,16 @@ All inputs are values the watch already records (no sensor is switched on for vi
 | Temperature (last 15 min) | `SensorHistory.getTemperatureHistory` |
 | Distance / floors, 7 days | `ActivityMonitor.getInfo()`, `getHistory()` (app only) |
 
-**Sleep is not readable by Connect IQ apps** (no API; open Garmin request). The spec's "sleep < 7 h" is therefore implemented as *low recharge*: today's Body Battery peak < 50, judged one hour after the user's wake time. A rest/nap that adds ≥ 10 Body Battery within 3 h clears it for the day.
+**Sleep data on this target.** The fēnix 7 Pro runs Connect IQ API 5.2.0 and the installed SDK 9.1.0 exposes no sleep data to apps: no sleep duration, stages or score, and no `COMPLICATION_TYPE_SLEEP_SCORE` in its API (checked in `api.debug.xml`). A sleep-score complication is reported for API 6.0.2 on newer devices; that was not verifiable here and does not apply to this watch either way. The app therefore never claims anything about sleep length or quality: it shows **low morning recharge**, today's Body Battery peak < 50, judged one hour after the user's wake time, and only when the newest Body Battery sample is at most 2 h old (missing or stale history never triggers it). A rest/nap that adds ≥ 10 Body Battery within 3 h clears it for the day.
 
 ### Energy
 
 | State | Trigger | Monkey | Recommendation | Recovers when |
 |---|---|---|---|---|
 | Rested | none below | goal pose | — | — |
-| Low recharge | Body Battery peak today < 50 | tired, yawning | "Ease in, bed early" | nap/rest gain ≥ 10, or tomorrow |
+| Low morning recharge | Body Battery peak today < 50 (fresh history only) | tired, yawning | "Ease in, bed early" | nap/rest gain ≥ 10, or tomorrow |
 | Inactive | move bar ≥ 3 (~90 min still) | tired; asleep sitting at level 5 (~2 h) | "A 5-min walk helps" | Garmin clears the move bar (a few minutes of walking) |
-| Exhausted | low recharge + inactive | asleep, takes over the face (black) | "Walk now, bed early" | either clears; full revive needs both |
+| Exhausted | low morning recharge + inactive | asleep, takes over the face (black) | "Walk now, bed early" | either clears; full revive needs both |
 | Night | outside wake–sleep window | asleep on night blue | "Quiet hours" | wake time |
 | Revived (event) | any tired state → rested | stretch animation, "I'm back!" | +20 XP | — |
 
@@ -155,7 +155,7 @@ Route novelty and compass bearings would need GPS tracks of other activities, wh
 
 ### Sleep
 
-Not readable on the watch (Garmin cloud Health API only: server + partner approval). Body Battery recharge is the proxy (see Energy).
+Not readable on this watch (API 5.2.0, SDK 9.1.0: no sleep duration, stages, score or sleep-score complication). A sleep-score complication is reported for API 6.0.2 on newer devices (not verified here). Real sleep data otherwise only via Garmin's cloud Health API (server + partner approval). The app uses *low morning recharge* from Body Battery instead and never labels it as sleep.
 
 ## Development safeguards
 

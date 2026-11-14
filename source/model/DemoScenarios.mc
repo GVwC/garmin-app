@@ -2,7 +2,7 @@ import Toybox.Lang;
 
 // Story mode, "A day with Momo": scripted scenes so a demo shows every feature in order,
 // independent of real sensor data. DOWN = next scene, UP = previous.
-//   0-9   day 1: short night, still -> reminder, walk, revive, midday reminder, stress -> breathe,
+//   0-9   day 1: low morning recharge (Body Battery 38/100), still -> reminder, walk, revive, midday reminder, stress -> breathe,
 //         calm, new route, goals met (evolves baby -> kid), night
 //   10    day 2: lazy day -> recap (goal missed, XP lost, streak out)
 //   11    journey: egg -> king next to your weekly progress
@@ -49,7 +49,7 @@ module DemoScenarios {
         var X = -1;
         var rows = [
             // --- day 1 ---
-            [5, Vitals.ENERGY_LOW_RECHARGE, C, 0, EFFECT_NONE, 38, 70, N, W, Q, X, 0],           // 07:30 short night
+            [5, Vitals.ENERGY_LOW_RECHARGE, C, 0, EFFECT_NONE, 38, 70, N, W, Q, X, 0],           // 07:30 low morning recharge
             [20, Vitals.ENERGY_INACTIVE, C, 0, EFFECT_NONE, 45, 72, N, W, Q, VitalsModel.NUDGE_INACTIVE, 0],
             [45, R, Vitals.CALM_EXERCISING, 0, EFFECT_NONE, 55, 60, N, W, Q, X, 0],             // 10:40 walk
             [45, R, C, 0, EFFECT_REVIVE, 62, 74, N, W, Q, X, 0],                                // 10:45 back
