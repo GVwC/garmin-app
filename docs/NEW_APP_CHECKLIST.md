@@ -31,7 +31,7 @@ Confirm every API is ≤ 5.2.0 and available on fenix7pro (compile to prove it).
 Sketch each screen at 260×260 round (content inside the circle). Map inputs: START/tap = select, BACK = back/exit, UP/DOWN = page, hold UP = menu. Use `WatchUi.pushView`/`popView` for navigation; `Menu2` for menus.
 
 ## 6. Implement the smallest functional version
-Replace `StarterModel` with your state, `MainView` with your first screen, `MainDelegate` with your input. Keep one screen working before adding more.
+Replace `ClimbModel` with your state, `MainView` with your first screen, `MainDelegate` with your input. Keep one screen working before adding more.
 
 ## 7. Test in the simulator
 `ciq.ps1 build` (no warnings) → `ciq.ps1 test` → `ciq.ps1 run`. Use *Simulation* menu to fake sensors/activity data/GPS; check memory in the status bar; try *Settings → Low battery*, etc.

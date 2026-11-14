@@ -6,11 +6,11 @@ import Toybox.WatchUi;
 // Owns the model and wires it into the initial view + delegate.
 class StarterApp extends Application.AppBase {
 
-    private var _model as StarterModel;
+    private var _model as ClimbModel;
 
     function initialize() {
         AppBase.initialize();
-        _model = new StarterModel();
+        _model = new ClimbModel();
     }
 
     function onStart(state as Dictionary?) as Void {

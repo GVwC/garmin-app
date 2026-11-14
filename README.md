@@ -1,7 +1,7 @@
-# garmin-connectiq-starter
+# garmin-app
 
 A small, reusable Connect IQ **watch-app** baseline for the Garmin **fēnix 7 Pro** (API 5.2.0, SDK 9.1.0).
-It shows "Garmin Starter / Ready to Build", counts START presses (or screen taps), and exits on BACK.
+It shows a climbing clock: three climbers scale rock walls for hours, minutes and seconds and fall back to the bottom when they pass the summit. START (or tap) toggles a fast demo mode; BACK exits.
 
 ## Quick start
 

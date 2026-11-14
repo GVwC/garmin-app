@@ -13,7 +13,7 @@
 ```
 manifest.xml          app id, type, products, permissions (edit via "Monkey C: Edit ..." commands)
 monkey.jungle         build config; sourcePath = source;tests
-source/StarterApp.mc  AppBase entry; owns StarterModel
+source/StarterApp.mc  AppBase entry; owns ClimbModel
 source/views/         WatchUi.View subclasses (drawing only)
 source/delegates/     input handling (BehaviorDelegate)
 source/model/         plain state/logic, unit-testable

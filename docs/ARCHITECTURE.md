@@ -2,7 +2,7 @@
 
 ```
 StarterApp (AppBase)          owns state, returns the initial view + delegate
- ├─ StarterModel              plain state/logic — no UI calls, unit-tested
+ ├─ ClimbModel                plain state/logic — no UI calls, unit-tested
  ├─ MainView (View)           reads the model, draws with Dc
  └─ MainDelegate (BehaviorDelegate)
                               input → updates model → WatchUi.requestUpdate()
