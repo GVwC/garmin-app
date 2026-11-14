@@ -68,7 +68,8 @@ class FurPickerDelegate extends WatchUi.BehaviorDelegate {
     }
 }
 
-// Hatching: START (once hatched) creates the character and opens the dashboard.
+// Hatching: START (once hatched) creates the character and goes straight into the story demo
+// ("A day with Momo"); BACK there leaves the story for live data.
 class HatchDelegate extends WatchUi.BehaviorDelegate {
 
     private var _model as MonkeyModel;
@@ -86,6 +87,7 @@ class HatchDelegate extends WatchUi.BehaviorDelegate {
         if (_view.isHatched()) {
             _model.setCreated();
             Log.debug("hatched name=" + _model.getName() + " fur=" + _model.getFur());
+            _model.enterDemo();
             $.openDashboard(_model, _vitals);
         }
         return true;

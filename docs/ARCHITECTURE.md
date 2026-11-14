@@ -103,7 +103,7 @@ Status priority (`MonkeyStatus`): Breath concerning > Exhausted > Night > Stress
 
 ### Guided breathing (BreathView)
 
-Box breathing 4-4-4-4 × 4 rounds (~64 s). The ring and the monkey's chest follow the breath; live HR (the only place a sensor is enabled — `Sensor` permission, on in `onShow`, off in `onHide`) is shown as a number and sparkline; the summary shows HR start → end. Opened by START when Alert/Stressed, or from the menu.
+Box breathing 4-4-4-4 × 2 rounds (~32 s; 1 round in story mode); START or a tap skips to the end (XP only after a full round). The ring and the monkey's chest follow the breath; live HR (the only place a sensor is enabled — `Sensor` permission, on in `onShow`, off in `onHide`) is shown as a number and sparkline; the summary shows HR start → end. Opened by START when Alert/Stressed, or from the menu.
 
 ## Reminders and battery
 

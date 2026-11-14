@@ -19,7 +19,7 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 - **Breath vital** (Pulse Ox history, read-only, non-diagnostic): Normal · Low · Concerning.
 - **Warmth vital** (watch temperature, conservative for wrist bias): OK · Cold · Hot.
 - **Curiosity vital** (distance/floors vs your week): Content · Routine · Adventurous (+30 XP "new territory").
-- **Guided breathing:** box breathing (~1 min) with an animated ring, the monkey breathing along and live heart rate.
+- **Guided breathing:** box breathing (~30 s, START/tap skips) with an animated ring, the monkey breathing along and live heart rate.
 - **Reminders:** a background check every 30 min (no sensors, history only) with quiet hours, cooldowns and a daily cap; asks you to open the app when the monkey needs you.
 - **Glance:** status or goal progress in the widget list.
 - **Story demo:** "A day with Momo", 20 scripted scenes in five chapters (see [docs/DEMO_PLAN.md](docs/DEMO_PLAN.md)), never saved.

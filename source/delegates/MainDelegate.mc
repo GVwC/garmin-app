@@ -75,7 +75,8 @@ class MainDelegate extends WatchUi.BehaviorDelegate {
     }
 }
 
-// Breathing screen: START restarts a finished session, BACK returns to the dashboard.
+// Breathing screen: START / tap skips to the end (or restarts a finished session),
+// BACK returns to the dashboard.
 class BreathDelegate extends WatchUi.BehaviorDelegate {
 
     private var _breath as BreathView;
@@ -90,6 +91,8 @@ class BreathDelegate extends WatchUi.BehaviorDelegate {
     function onSelect() as Boolean {
         if (_breath.isDone()) {
             _breath.restart();
+        } else {
+            _breath.finish();
         }
         return true;
     }

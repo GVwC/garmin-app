@@ -215,6 +215,9 @@ class MainView extends WatchUi.View {
 
     function onShow() as Void {
         _timer = new Timer.Timer();
+        if (_model.isDemo()) {
+            onStoryScene();
+        }
         refresh(true);
         schedule();
         if (_checkPending) {

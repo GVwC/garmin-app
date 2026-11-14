@@ -15,7 +15,7 @@ Goal: a 3–4 minute demo that takes judges from **creating a monkey** (egg → 
 
 ## 2. The demo in five chapters
 
-Story mode (Hold UP → *Story demo*) plays a scripted day; **DOWN** = next scene, **UP** = previous, **BACK** = leave. Full-screen moments open automatically when their scene is entered.
+Story mode starts **by itself right after hatching** (or Hold UP → *Story demo*) and plays a scripted day; **DOWN** = next scene, **UP** = previous, **BACK** = leave. Full-screen moments open automatically when their scene is entered.
 
 | Time | Chapter / screen | What the presenter says / does | Real or scripted |
 |---|---|---|---|
@@ -23,14 +23,14 @@ Story mode (Hold UP → *Story demo*) plays a scripted day; **DOWN** = next scen
 | **0:20–1:15** | **1. Create your monkey** | | Real app flow |
 | | Welcome: wobbling egg, "Hatch your companion" | "Everyone starts with an egg." START. | |
 | | Name → Fur (UP/DOWN recolours the egg's spots) → Goals (Steps, Active min, Floors; each with a target) → Done | "You choose what feeds your monkey." | |
-| | Hatching: wobble, two cracks, baby pops out of its shell with sparkles, "Momo hatched!" | Pause for the reaction. START. | |
+| | Hatching: wobble, two cracks, baby pops out of its shell with sparkles, "Momo hatched!" | Pause for the reaction. START → the story begins at 07:30. | |
 | **1:15–2:00** | **2. Steps, states and reminders** (story scenes 0–4) | | Scripted, labelled STORY |
 | | 07:30 short night → yawning monkey, "Ease in, bed early" | "No sleep API on Connect IQ — Body Battery tells us the recharge was poor." | |
 | | 10:30 still 90 min → **Reminder screen**: buzz, shaking tired monkey, "Momo needs you!" | "This is what the background check sends — on the watch it wakes the app." BACK = later. | |
 | | 10:40 walk → steps **count up**, monkey jogs; 10:45 *I'm back! +20 XP* | | |
 | | 13:00 under half → **Reminder screen** (hungry, banana dropped) | "Half the day, under half the goal." | |
 | **2:00–2:30** | **3. Stress and breathing** (scenes 5–6) | | |
-| | 15:10 stressed → **Reminder screen** → START → **breathing screen** (ring + monkey breathe, live HR) | Let one 16-s round play. BACK. | Breathing screen is real |
+| | 15:10 stressed → **Reminder screen** → START → **breathing screen** (ring + monkey breathe, live HR) | One 16-s round in story mode; START or tap skips anytime. BACK. | Breathing screen is real |
 | | 15:12 *Calm again* | "Heart rate only counts as stress when you're not moving." | |
 | | 16:30 new route +30 XP; 18:00 goals met: eats, bounces, +XP, **evolves baby → kid**; 22:30 asleep, quiet hours | | |
 | **2:30–2:50** | **4. A missed day** (scene 10) | | |

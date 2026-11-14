@@ -4,14 +4,14 @@ import Toybox.Sensor;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
-// Guided box breathing: 4 s in, 4 s hold, 4 s out, 4 s hold, ROUNDS times (~1 min).
+// Guided box breathing: 4 s in, 4 s hold, 4 s out, 4 s hold — 2 rounds (~32 s), 1 in story mode.
+// START / tap skips to the end at any time (XP only after at least one full round).
 // The ring and the monkey's chest rise and fall with the breath; live wrist HR is plotted.
 // The HR sensor is enabled only while this screen is visible (onShow/onHide).
 class BreathView extends WatchUi.View {
 
     private static const PHASE_MS = 4000;
-    private static const ROUNDS = 4;
-    private static const TOTAL_MS = PHASE_MS * 4 * ROUNDS;
+    private static const ROUND_MS = PHASE_MS * 4;
     private static const TICK_MS = 100;
     private static const SCALE = 3;
     private static const MAX_HR_POINTS = 64;
@@ -32,6 +32,7 @@ class BreathView extends WatchUi.View {
     private var _sAgain as String = "";
     private var _sHr as String = "";
     private var _sXp as String = "";
+    private var _sSkip as String = "";
 
     function initialize(model as MonkeyModel) {
         View.initialize();
@@ -49,6 +50,7 @@ class BreathView extends WatchUi.View {
         _sAgain = WatchUi.loadResource(Rez.Strings.BreathAgain) as String;
         _sHr = WatchUi.loadResource(Rez.Strings.Hr) as String;
         _sXp = WatchUi.loadResource(Rez.Strings.Xp) as String;
+        _sSkip = WatchUi.loadResource(Rez.Strings.BreathSkip) as String;
     }
 
     function onShow() as Void {
@@ -77,6 +79,21 @@ class BreathView extends WatchUi.View {
 
     function isDone() as Boolean {
         return _done;
+    }
+
+    private function rounds() as Number {
+        return _model.isDemo() ? 1 : 2;
+    }
+
+    // Ends the session now (also used by START / tap to skip).
+    function finish() as Void {
+        if (_done) {
+            return;
+        }
+        _done = true;
+        stopTimer();
+        _awarded = (_elapsed >= ROUND_MS) ? _model.addBreathBonus() : false;
+        WatchUi.requestUpdate();
     }
 
     function restart() as Void {
@@ -113,10 +130,8 @@ class BreathView extends WatchUi.View {
                 _hrs = _hrs.slice(1, null);
             }
         }
-        if (_elapsed >= TOTAL_MS) {
-            _done = true;
-            stopTimer();
-            _awarded = _model.addBreathBonus();
+        if (_elapsed >= rounds() * ROUND_MS) {
+            finish();
         }
         WatchUi.requestUpdate();
     }
@@ -174,6 +189,8 @@ class BreathView extends WatchUi.View {
         var left = (PHASE_MS - _elapsed % PHASE_MS + 999) / 1000;
         dc.drawText(cx, 186, Graphics.FONT_MEDIUM, left.toString(), center);
         drawRounds(dc, cx);
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, 248, Graphics.FONT_XTINY, _sSkip, center);
         drawHr(dc, cx, center);
     }
 
@@ -187,10 +204,12 @@ class BreathView extends WatchUi.View {
     }
 
     private function drawRounds(dc as Dc, cx as Number) as Void {
-        var round = _elapsed / (PHASE_MS * 4);
-        for (var i = 0; i < ROUNDS; i++) {
+        var round = _elapsed / ROUND_MS;
+        var n = rounds();
+        var x0 = cx - (n * 14 - 4) / 2;
+        for (var i = 0; i < n; i++) {
             dc.setColor(i <= round ? 0x55AAFF : 0x555555, Graphics.COLOR_TRANSPARENT);
-            dc.fillRectangle(cx - 27 + i * 14, 205, 10, 4);
+            dc.fillRectangle(x0 + i * 14, 205, 10, 4);
         }
     }
 

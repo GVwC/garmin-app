@@ -140,6 +140,7 @@
     <string id="BreathDone">Nice. Feel calmer?</string>
     <string id="BreathAgain">START again  BACK done</string>
     <string id="Hr">HR</string>
+    <string id="BreathSkip">START: skip</string>
     <string id="NeedsYou">needs you!</string>
     <string id="ReminderBreathe">START: breathe now</string>
     <string id="ReminderGo">START: on it!</string>
