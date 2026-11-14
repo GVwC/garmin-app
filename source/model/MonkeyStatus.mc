@@ -51,7 +51,8 @@ module MonkeyStatus {
     const MSG_HOT = 11;
     const MSG_ADVENTUROUS = 12;
     const MSG_ROUTINE = 13;
-    const MSG_COUNT = 14;
+    const MSG_CLIMB = 14;
+    const MSG_COUNT = 15;
 
     function message(energy as Number, calm as Number, deepStill as Boolean,
             breath as Number, warmth as Number, curious as Number) as Number {
@@ -77,6 +78,8 @@ module MonkeyStatus {
             return MSG_ALERT;
         } else if (calm == Vitals.CALM_EXERCISING) {
             return MSG_EXERCISING;
+        } else if (curious == Vitals.CURIOUS_CLIMB) {
+            return MSG_CLIMB;
         } else if (curious == Vitals.CURIOUS_ADVENTUROUS) {
             return MSG_ADVENTUROUS;
         } else if (curious == Vitals.CURIOUS_ROUTINE) {
@@ -103,7 +106,7 @@ module MonkeyStatus {
             return POSE_COLD;
         } else if (msg == MSG_HOT) {
             return POSE_HOT;
-        } else if (msg == MSG_ADVENTUROUS) {
+        } else if (msg == MSG_ADVENTUROUS || msg == MSG_CLIMB) {
             return POSE_CLIMB;
         } else if (msg == MSG_ROUTINE) {
             return POSE_BORED;

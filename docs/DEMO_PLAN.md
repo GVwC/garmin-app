@@ -32,13 +32,16 @@ Story mode starts **by itself right after hatching** (or Hold UP → *Story demo
 | **2:00–2:30** | **3. Stress and breathing** (scenes 5–6) | | |
 | | 15:10 stressed → **Reminder screen** → START → **breathing screen** (ring + monkey breathe, live HR) | One 16-s round in story mode; START or tap skips anytime. BACK. | Breathing screen is real |
 | | 15:12 *Calm again* | "Heart rate only counts as stress when you're not moving." | |
-| | 16:30 new route +30 XP; 18:00 goals met: eats, bounces, +XP, **evolves baby → kid**; 22:30 asleep, quiet hours | | |
+| | 16:30 **Climb milestone**: Momo plants a flag, "Climb milestone +30", then the **sunglasses slide on** ("Sunglasses earned!") and stay on | "Garmin's own floor count says we climbed — Momo earned shades." | Scripted; live uses the same rule on real floors |
+| | 18:00 goals met: eats, bounces, +XP, **evolves baby → kid** (still in shades); 22:30 asleep, quiet hours | | |
 | **2:30–2:50** | **4. A missed day** (scene 10) | | |
 | | **Day recap**: sad monkey, 35 % bar, XP counting down −50, streak flame goes out, "Tomorrow is a new banana" | "Missing costs a little XP — never shame, always a way back." | |
 | **2:50–3:20** | **5. Progress — the monkey and you** (scene 11) | | |
 | | **Journey**: egg → baby → kid → adult → king, one stage every 1.6 s with a buzz, next to *your* weekly steps chart rising (+100 % since week 1) | "The monkey grows because *you* grew." | |
 | 3:20–3:40 | Live mode on simulator or watch | *Simulation → Activity Monitoring → 120 steps/min*: real counter climbs. Show the glance. | Real data |
 | 3:40–4:00 | (slide) | Battery (no sensors in background, 30-min checks, history only), privacy (on-watch), next steps. | — |
+
+Replay the sunglasses moment any time: in story press UP once (back to 15:12) and DOWN again (they come off and slide on again); live unlocks and XP are never touched.
 
 Extra scenes after the journey (12–19) show the remaining states for Q&A: still 2 h, exhausted, alert, breath low (twice), cold, hot, routine.
 

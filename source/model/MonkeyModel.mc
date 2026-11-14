@@ -42,7 +42,11 @@ class MonkeyModel {
     static const EV_MISSED = 1;
     static const EV_REVIVE = 2;
     static const EV_BREATH = 3;
-    static const EV_EXPLORE = 4;
+    static const EV_EXPLORE = 4;   // distance record
+    static const EV_CLIMB = 5;     // climb milestone
+
+    // Earned items (bit flags, stored once).
+    static const UNLOCK_SUNGLASSES = 1;
 
     private static const KEY_ON = "goalsOn";
     private static const KEY_TARGETS = "goalTargets";
@@ -50,6 +54,7 @@ class MonkeyModel {
     private static const KEY_EVAL_DAY = "lastEvalDay";
     private static const KEY_BREATH_DAY = "breathDay";
     private static const KEY_EXPLORE_DAY = "exploreDay";
+    private static const KEY_UNLOCKS = "unlocks";
     private static const KEY_STREAK = "streak";        // [finished-day streak, bonus day]
     private static const KEY_CHARACTER = "character";  // [created 0/1, fur, name]
 
@@ -62,6 +67,8 @@ class MonkeyModel {
     private var _lastEvalDay as Number? = null;
     private var _breathDay as Number = -1;
     private var _exploreDay as Number = -1;
+    private var _unlocks as Number = 0;
+    private var _unlockPending as Number = 0;   // newly unlocked, for the view's equip animation
     private var _streak as Number = 0;
     private var _streakBonusDay as Number = -1;
     private var _created as Boolean = false;
@@ -127,6 +134,8 @@ class MonkeyModel {
         _lastEvalDay = null;
         _breathDay = -1;
         _exploreDay = -1;
+        _unlocks = 0;
+        _unlockPending = 0;
         _streak = 0;
         _streakBonusDay = -1;
         _created = false;
@@ -334,16 +343,54 @@ class MonkeyModel {
         return true;
     }
 
-    // Once per day; returns true when XP was awarded.
-    function addExploreBonus() as Boolean {
+    // Distance record or climb milestone: one +XP_EXPLORE per day in total (kind = EV_EXPLORE
+    // or EV_CLIMB, for the banner). Returns true when XP was awarded.
+    function addExploreBonus(kind as Number) as Boolean {
         if (!_demo) {
             if (_exploreDay == _today) {
                 return false;
             }
             _exploreDay = _today;
         }
-        addXp(XP_EXPLORE, EV_EXPLORE);
+        addXp(XP_EXPLORE, kind);
         return true;
+    }
+
+    // ---------- earned items ----------
+
+    // Live: unlocks once and is stored. Story: never stored (sunglasses follow the scene).
+    // Returns true the first time, so the view can play the equip animation.
+    function unlockSunglasses() as Boolean {
+        if (_demo) {
+            _unlockPending = UNLOCK_SUNGLASSES;
+            return true;
+        }
+        if ((_unlocks & UNLOCK_SUNGLASSES) != 0) {
+            return false;
+        }
+        _unlocks |= UNLOCK_SUNGLASSES;
+        _unlockPending = UNLOCK_SUNGLASSES;
+        save();
+        return true;
+    }
+
+    // Story: worn from the climb scene on, so replays (and UP/DOWN) stay consistent.
+    function hasSunglasses() as Boolean {
+        if (_demo) {
+            return _demoStage >= DemoScenarios.CLIMB_SCENE && _demoStage != DemoScenarios.JOURNEY_SCENE;
+        }
+        return (_unlocks & UNLOCK_SUNGLASSES) != 0;
+    }
+
+    function hasLiveSunglasses() as Boolean {
+        return (_unlocks & UNLOCK_SUNGLASSES) != 0;
+    }
+
+    // The view takes a fresh unlock once (0 = none).
+    function takeUnlock() as Number {
+        var u = _unlockPending;
+        _unlockPending = 0;
+        return u;
     }
 
     private function addXp(xp as Number, kind as Number) as Void {
@@ -368,6 +415,7 @@ class MonkeyModel {
         _demo = true;
         _demoStage = 0;
         _demoXp = DemoScenarios.STORY_XP;
+        _unlockPending = 0;
         clearEvent();
     }
 
@@ -396,6 +444,9 @@ class MonkeyModel {
             addXp(XP_REVIVE, EV_REVIVE);
         } else if (effect == DemoScenarios.EFFECT_EXPLORE) {
             addXp(XP_EXPLORE, EV_EXPLORE);
+        } else if (effect == DemoScenarios.EFFECT_CLIMB) {
+            addXp(XP_EXPLORE, EV_CLIMB);
+            unlockSunglasses();
         }
     }
 
@@ -592,6 +643,7 @@ class MonkeyModel {
         _lastEvalDay = (eval instanceof Number) ? eval : null;
         _breathDay = readNumber(KEY_BREATH_DAY, -1);
         _exploreDay = readNumber(KEY_EXPLORE_DAY, -1);
+        _unlocks = readNumber(KEY_UNLOCKS, 0);
         var streak = Storage.getValue(KEY_STREAK);
         if (streak instanceof Array && streak.size() == 2) {
             _streak = num(streak[0], 0);
@@ -621,6 +673,7 @@ class MonkeyModel {
         Storage.setValue(KEY_EVAL_DAY, _lastEvalDay);
         Storage.setValue(KEY_BREATH_DAY, _breathDay);
         Storage.setValue(KEY_EXPLORE_DAY, _exploreDay);
+        Storage.setValue(KEY_UNLOCKS, _unlocks);
         Storage.setValue(KEY_STREAK, [_streak, _streakBonusDay]);
         Storage.setValue(KEY_CHARACTER, [_created ? 1 : 0, _fur, _name]);
     }

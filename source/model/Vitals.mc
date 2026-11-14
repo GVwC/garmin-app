@@ -50,7 +50,9 @@ class VitalsSnapshot {
 //   COLD           every reading of the last ~15 min below COLD_C (only real cold gets the wrist that low)
 //   HOT            reading >= HOT_C and HR raised without movement
 // Curiosity (daily distance / floors vs the last 7 days; no GPS)
-//   ADVENTUROUS    today beats the 7-day best distance (>= 3 km) or floors (>= 5): reward
+//   CLIMB          climb milestone from Garmin's floors count (barometric, firmware-filtered):
+//                  >= CLIMB_MILESTONE_FLOORS today, or a new 7-day floors best of >= 5
+//   ADVENTUROUS    distance record: today beats the 7-day best distance (>= 3 km)
 //   ROUTINE        last 3 days nearly identical distance (+-15 %) and almost no floors
 (:background, :glance)
 module Vitals {
@@ -76,7 +78,8 @@ module Vitals {
 
     const CURIOUS_CONTENT = 0;
     const CURIOUS_ROUTINE = 1;
-    const CURIOUS_ADVENTUROUS = 2;
+    const CURIOUS_ADVENTUROUS = 2; // distance record
+    const CURIOUS_CLIMB = 3;       // climb milestone (floors)
 
     // Thresholds (tune here).
     const RECHARGE_MIN = 50;       // Body Battery peak below this = low recharge
@@ -98,6 +101,7 @@ module Vitals {
     const HOT_C = 35;
     const EXPLORE_MIN_CM = 300000; // 3 km (ActivityMonitor distance is in cm)
     const EXPLORE_MIN_FLOORS = 5;
+    const CLIMB_MILESTONE_FLOORS = 10; // ~30 m of climbing in a day
     const ROUTINE_SPREAD_PCT = 15;
     const ROUTINE_MAX_FLOORS = 2;
 
@@ -264,6 +268,9 @@ module Vitals {
 
     // past: finished days, newest first, as [distanceCm, floors] (null values allowed).
     function curiosityState(todayCm as Number?, todayFloors as Number?, past as Array<Array<Number?> >) as Number {
+        if (todayFloors != null && todayFloors >= CLIMB_MILESTONE_FLOORS) {
+            return CURIOUS_CLIMB;
+        }
         if (past.size() < 3) {
             return CURIOUS_CONTENT;
         }
@@ -279,10 +286,10 @@ module Vitals {
                 bestFloors = f;
             }
         }
-        if (todayCm != null && todayCm > bestCm && todayCm >= EXPLORE_MIN_CM) {
-            return CURIOUS_ADVENTUROUS;
-        }
         if (todayFloors != null && todayFloors > bestFloors && todayFloors >= EXPLORE_MIN_FLOORS) {
+            return CURIOUS_CLIMB;
+        }
+        if (todayCm != null && todayCm > bestCm && todayCm >= EXPLORE_MIN_CM) {
             return CURIOUS_ADVENTUROUS;
         }
         // Routine: the last three days look the same.

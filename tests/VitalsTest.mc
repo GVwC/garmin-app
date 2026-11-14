@@ -309,15 +309,15 @@ function curiosityRewardsNewBestsAndSpotsRoutine(logger as Logger) as Boolean {
     var routine = [[400000, 0], [410000, 1], [395000, 0], [200000, 0]] as Array<Array<Number?> >;
     Test.assertEqual(Vitals.curiosityState(100000, 0, routine), Vitals.CURIOUS_ROUTINE);
     Test.assertEqual(Vitals.curiosityState(450000, 0, routine), Vitals.CURIOUS_ADVENTUROUS); // new distance best
-    Test.assertEqual(Vitals.curiosityState(100000, 6, routine), Vitals.CURIOUS_ADVENTUROUS); // new floors best
+    Test.assertEqual(Vitals.curiosityState(100000, 6, routine), Vitals.CURIOUS_CLIMB); // new floors best = climb milestone
     var varied = [[400000, 0], [800000, 3], [200000, 0]] as Array<Array<Number?> >;
     Test.assertEqual(Vitals.curiosityState(100000, 0, varied), Vitals.CURIOUS_CONTENT);
     Test.assertEqual(Vitals.curiosityState(900000, 0, [[1, 1]] as Array<Array<Number?> >), Vitals.CURIOUS_CONTENT); // too little history
     // Explorer bonus is once per day.
     var m = new MonkeyModel();
     m.update(700, st(0), noHistory());
-    Test.assert(m.addExploreBonus());
-    Test.assert(!m.addExploreBonus());
+    Test.assert(m.addExploreBonus(MonkeyModel.EV_EXPLORE));
+    Test.assert(!m.addExploreBonus(MonkeyModel.EV_CLIMB)); // one explore bonus per day in total
     Test.assertEqual(m.getXp(), MonkeyModel.XP_EXPLORE);
     return true;
 }
@@ -355,5 +355,57 @@ function lowRechargeNeedsFreshHistory(logger as Logger) as Boolean {
     s.bbAgeMin = 180;
     s.moveBar = 3;
     Test.assertEqual(Vitals.energyState(s, false), Vitals.ENERGY_INACTIVE);
+    return true;
+}
+
+(:test)
+function climbMilestoneUsesFloors(logger as Logger) as Boolean {
+    var none = [] as Array<Array<Number?> >;
+    // Absolute milestone works from day one (no history needed).
+    Test.assertEqual(Vitals.curiosityState(0, Vitals.CLIMB_MILESTONE_FLOORS, none), Vitals.CURIOUS_CLIMB);
+    Test.assertEqual(Vitals.curiosityState(0, Vitals.CLIMB_MILESTONE_FLOORS - 1, none), Vitals.CURIOUS_CONTENT);
+    Test.assertEqual(Vitals.curiosityState(0, null, none), Vitals.CURIOUS_CONTENT);
+    // New 7-day floors best (>= 5) beats a distance record for the label.
+    var week = [[300000, 2], [500000, 4], [200000, 1]] as Array<Array<Number?> >;
+    Test.assertEqual(Vitals.curiosityState(600000, 5, week), Vitals.CURIOUS_CLIMB);
+    Test.assertEqual(Vitals.curiosityState(600000, 4, week), Vitals.CURIOUS_ADVENTUROUS);
+    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_RESTED, Vitals.CALM_CALM, false, Vitals.BREATH_NORMAL,
+        Vitals.WARMTH_OK, Vitals.CURIOUS_CLIMB), MonkeyStatus.MSG_CLIMB);
+    Test.assertEqual(MonkeyStatus.pose(MonkeyStatus.POSE_RELAX, MonkeyStatus.MSG_CLIMB, 0), MonkeyStatus.POSE_CLIMB);
+    return true;
+}
+
+(:test)
+function sunglassesUnlockOnceAndStoryNeverWritesThem(logger as Logger) as Boolean {
+    var m = new MonkeyModel();
+    m.update(900, st(0), noHistory());
+    Test.assert(!m.hasSunglasses());
+    // Live: first unlock plays (pending once), second does nothing.
+    Test.assert(m.unlockSunglasses());
+    Test.assertEqual(m.takeUnlock(), MonkeyModel.UNLOCK_SUNGLASSES);
+    Test.assertEqual(m.takeUnlock(), 0);
+    Test.assert(!m.unlockSunglasses());
+    Test.assert(m.hasSunglasses());
+
+    // Story replay on a monkey without sunglasses: worn from the climb scene, never stored.
+    var s = new MonkeyModel();
+    s.update(900, st(0), noHistory());
+    s.enterDemo();
+    Test.assert(!s.hasSunglasses());
+    for (var i = 0; i < DemoScenarios.CLIMB_SCENE; i++) {
+        s.nextDemoStage();
+    }
+    Test.assert(s.hasSunglasses());
+    Test.assertEqual(s.takeUnlock(), MonkeyModel.UNLOCK_SUNGLASSES);
+    var e = s.takeEvent();
+    Test.assert(e != null && e[3] == MonkeyModel.EV_CLIMB && e[0] == MonkeyModel.XP_EXPLORE);
+    s.prevDemoStage();
+    Test.assert(!s.hasSunglasses()); // going back takes them off again
+    s.exitDemo();
+    Test.assert(!s.hasLiveSunglasses());
+    Test.assert(!s.hasSunglasses());
+    Test.assertEqual(s.getXp(), 0);
+    // Live daily XP rule unchanged after a story replay.
+    Test.assert(s.addExploreBonus(MonkeyModel.EV_CLIMB));
     return true;
 }

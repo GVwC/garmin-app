@@ -3,7 +3,7 @@ import Toybox.Lang;
 // Story mode, "A day with Momo": scripted scenes so a demo shows every feature in order,
 // independent of real sensor data. DOWN = next scene, UP = previous.
 //   0-9   day 1: low morning recharge (Body Battery 38/100), still -> reminder, walk, revive, midday reminder, stress -> breathe,
-//         calm, new route, goals met (evolves baby -> kid), night
+//         calm, climb milestone (+XP, sunglasses), goals met (evolves baby -> kid), night
 //   10    day 2: lazy day -> recap (goal missed, XP lost, streak out)
 //   11    journey: egg -> king next to your weekly progress
 //   12+   extra states
@@ -30,6 +30,7 @@ module DemoScenarios {
     const EFFECT_REVIVE = 3;
     const EFFECT_EXPLORE = 4;
     const EFFECT_CALMED = 5;
+    const EFFECT_CLIMB = 6;     // climb milestone: +XP and the sunglasses equip
 
     const SCREEN_NONE = 0;
     const SCREEN_RECAP = 1;
@@ -39,6 +40,8 @@ module DemoScenarios {
     const DAY_SCENES = 12;
     const STORY_XP = 520;  // level 2 baby; revive + explore + goal crosses level 3 (kid)
     const STORY_STREAK = 2;
+    const CLIMB_SCENE = 7;      // sunglasses are worn from here on in the story
+    const JOURNEY_SCENE = 11;   // the journey montage starts from the egg, no sunglasses
 
     function row(stage as Number) as Array<Number> {
         var R = Vitals.ENERGY_RESTED;
@@ -56,7 +59,7 @@ module DemoScenarios {
             [45, R, C, 0, EFFECT_NONE, 60, 72, N, W, Q, VitalsModel.NUDGE_GOAL, 0],             // 13:00 under half
             [60, R, Vitals.CALM_STRESSED, 0, EFFECT_NONE, 55, 15, N, W, Q, VitalsModel.NUDGE_STRESSED, 0],
             [60, R, C, 0, EFFECT_CALMED, 58, 76, N, W, Q, X, 0],                                // 15:12 calm
-            [85, R, C, 0, EFFECT_EXPLORE, 66, 78, N, W, Vitals.CURIOUS_ADVENTUROUS, X, 0],      // 16:30 new route
+            [85, R, C, 0, EFFECT_CLIMB, 66, 78, N, W, Vitals.CURIOUS_CLIMB, X, 0],              // 16:30 climb milestone
             [100, R, C, 0, EFFECT_GOAL, 70, 80, N, W, Q, X, 0],                                 // 18:00 goals
             [100, Vitals.ENERGY_SLEEPING, C, 0, EFFECT_NONE, 72, 86, N, W, Q, X, 0],            // 22:30 night
             // --- day 2 and the journey ---

@@ -522,4 +522,15 @@ module MonkeyArt {
     function crownAccessory() as Array {
         return [[7, -4, ["Y..Y..Y..Y", "YY.YY.YYYY", "YYYYYYYYYY", "YRYYWYYRYY"]]];
     }
+
+    // ---------- earned items ----------
+
+    // Sunglasses (unlocked by a climb milestone), drawn over the eyes of any pose.
+    function sunglasses() as Array {
+        return [[5, 5, [
+            "KKKKKKKKKKKKKK",
+            ".KWKKK..KWKKK.",
+            "..KKK....KKK.."
+        ]]];
+    }
 }

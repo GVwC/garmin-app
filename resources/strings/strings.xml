@@ -22,8 +22,9 @@
     <string id="St9" scope="glance">Bit out of breath</string>
     <string id="St10" scope="glance">Getting cold</string>
     <string id="St11" scope="glance">Hot out there</string>
-    <string id="St12" scope="glance">New territory!</string>
+    <string id="St12" scope="glance">Distance record!</string>
     <string id="St13" scope="glance">Same old routine</string>
+    <string id="St14" scope="glance">Climb milestone!</string>
 
     <!-- Recommendations, index = MonkeyStatus.MSG_* -->
     <string id="Ac0">Walk now, bed early</string>
@@ -40,6 +41,7 @@
     <string id="Ac11">Water and shade</string>
     <string id="Ac12">Explorer bonus!</string>
     <string id="Ac13">New direction today?</string>
+    <string id="Ac14">Enjoy the view!</string>
 
     <!-- Background reminders, index = VitalsModel.NUDGE_* -->
     <string id="Nudge0" scope="background">Running on empty. Walk 5 min now and go to bed early tonight.</string>
@@ -63,7 +65,9 @@
     <string id="Revived">I'm back!</string>
     <string id="Calmed">Calm again</string>
     <string id="Breathed">Breather done</string>
-    <string id="Explored">New territory!</string>
+    <string id="Explored">Distance record</string>
+    <string id="Climbed">Climb milestone</string>
+    <string id="Sunglasses">Sunglasses earned!</string>
 
     <string id="HintLive">START: goals</string>
     <string id="HintMenu">Hold UP: menu</string>
@@ -78,7 +82,7 @@
     <string id="Dm4">13:00 under half</string>
     <string id="Dm5">15:10 stressed</string>
     <string id="Dm6">15:12 calm again</string>
-    <string id="Dm7">16:30 new route</string>
+    <string id="Dm7">16:30 Climb milestone</string>
     <string id="Dm8">18:00 goals met!</string>
     <string id="Dm9">22:30 good night</string>
     <string id="Dm10">day 2: lazy day</string>

@@ -49,6 +49,10 @@ class MainView extends WatchUi.View {
     private var _fur as Number = 0;
     private var _stage as Number = -1;     // last shown growth stage (-1 = not yet known)
     private var _evolveTicks as Number = 0;
+    private static const EQUIP_TICKS = 24;       // 1 s celebration, then a 1.4 s slide onto the eyes
+    private static const EQUIP_SLIDE = 14;
+    private var _equipTicks as Number = 0;
+    private var _sunglasses as Array<Number>? = null;
     private var _stageNames as Array<String> = [];
     private var _name as String = "";
 
@@ -87,10 +91,12 @@ class MainView extends WatchUi.View {
         _units = strs([Rez.Strings.UnitSteps, Rez.Strings.UnitActive, Rez.Strings.UnitFloors]);
         _titles = strs([Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
             Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8,
-            Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13]);
+            Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13,
+            Rez.Strings.St14]);
         _actions = strs([Rez.Strings.Ac0, Rez.Strings.Ac1, Rez.Strings.Ac2, Rez.Strings.Ac3,
             Rez.Strings.Ac4, Rez.Strings.Ac5, Rez.Strings.Ac6, Rez.Strings.Ac7, Rez.Strings.Ac8,
-            Rez.Strings.Ac9, Rez.Strings.Ac10, Rez.Strings.Ac11, Rez.Strings.Ac12, Rez.Strings.Ac13]);
+            Rez.Strings.Ac9, Rez.Strings.Ac10, Rez.Strings.Ac11, Rez.Strings.Ac12, Rez.Strings.Ac13,
+            Rez.Strings.Ac14]);
         _demoLabels = strs([Rez.Strings.Dm0, Rez.Strings.Dm1, Rez.Strings.Dm2, Rez.Strings.Dm3,
             Rez.Strings.Dm4, Rez.Strings.Dm5, Rez.Strings.Dm6, Rez.Strings.Dm7, Rez.Strings.Dm8,
             Rez.Strings.Dm9, Rez.Strings.Dm10, Rez.Strings.Dm11, Rez.Strings.Dm12, Rez.Strings.Dm13,
@@ -109,6 +115,8 @@ class MainView extends WatchUi.View {
             :calmed => str(Rez.Strings.Calmed),
             :breathed => str(Rez.Strings.Breathed),
             :explored => str(Rez.Strings.Explored),
+            :climbed => str(Rez.Strings.Climbed),
+            :sunglasses => str(Rez.Strings.Sunglasses),
             :evolved => str(Rez.Strings.Evolved),
             :bodyBattery => str(Rez.Strings.BodyBattery),
             :hintLive => str(Rez.Strings.HintLive),
@@ -169,6 +177,7 @@ class MainView extends WatchUi.View {
         }
         PixelSprite.draw(dc, _body, _colors, x, y, scale);
         PixelSprite.draw(dc, poseRuns(pose), _colors, x, y, scale);
+        drawSunglasses(dc, x, y, scale);
         var acc = Growth.accessoryFor(stage());
         if (acc >= 0) {
             var runs = _accessories[acc];
@@ -179,6 +188,20 @@ class MainView extends WatchUi.View {
             }
             PixelSprite.draw(dc, runs, _colors, x, y, scale);
         }
+    }
+
+    // Earned sunglasses: hidden during the celebration, then slide down onto the eyes.
+    private function drawSunglasses(dc as Dc, x as Number, y as Number, scale as Number) as Void {
+        if (!_model.hasSunglasses() || _equipTicks > EQUIP_SLIDE) {
+            return;
+        }
+        var runs = _sunglasses;
+        if (runs == null) {
+            runs = PixelSprite.compile([MonkeyArt.sunglasses()]);
+            _sunglasses = runs;
+        }
+        var lift = (_equipTicks > 0) ? _equipTicks * 8 / EQUIP_SLIDE : 0; // rows above the eyes
+        PixelSprite.draw(dc, runs, _colors, x, y - lift * scale, scale);
     }
 
     private function stage() as Number {
@@ -283,8 +306,11 @@ class MainView extends WatchUi.View {
             showBanner(text(:calmed), 0x55FFFF);
         }
         _curious = ActivityHistory.curiosity();
-        if (_curious == Vitals.CURIOUS_ADVENTUROUS) {
-            _model.addExploreBonus(); // once per day; the event shows the banner
+        if (_curious == Vitals.CURIOUS_CLIMB) {
+            _model.addExploreBonus(MonkeyModel.EV_CLIMB); // once per day; the event shows the banner
+            _model.unlockSunglasses();                   // once ever; plays the equip animation
+        } else if (_curious == Vitals.CURIOUS_ADVENTUROUS) {
+            _model.addExploreBonus(MonkeyModel.EV_EXPLORE);
         }
         var now = Time.now().value();
         _vitals.markSeen(snap, _model.getProgressPermille(), now);
@@ -416,6 +442,9 @@ class MainView extends WatchUi.View {
     }
 
     private function pollEvent() as Void {
+        if (_model.takeUnlock() == MonkeyModel.UNLOCK_SUNGLASSES) {
+            _equipTicks = EQUIP_TICKS;
+        }
         var e = _model.takeEvent();
         if (e == null) {
             return;
@@ -437,11 +466,16 @@ class MainView extends WatchUi.View {
         } else if (kind == MonkeyModel.EV_EXPLORE) {
             label = text(:explored);
             color = 0x55FF55;
+        } else if (kind == MonkeyModel.EV_CLIMB) {
+            label = text(:climbed);
+            color = 0x55FF55;
         }
+        // Long labels drop the " XP" suffix so the banner fits the round top edge.
+        var longLabel = kind == MonkeyModel.EV_EXPLORE || kind == MonkeyModel.EV_CLIMB;
         if (e[2]) {
             showBanner(text(:levelUp), 0x55FFFF);
         } else {
-            showBanner(label + " " + Fmt.signed(xp) + " " + text(:xp), color);
+            showBanner(label + " " + Fmt.signed(xp) + (longLabel ? "" : " " + text(:xp)), color);
         }
         if (e[1]) {
             _bounceTick = 0;
@@ -462,7 +496,7 @@ class MainView extends WatchUi.View {
 
     private function isAnimating() as Boolean {
         return _bounceTick >= 0 || _stretchTicks > 0 || _bannerTicks > 0 || _evolveTicks > 0
-            || _countTicks > 0;
+            || _countTicks > 0 || _equipTicks > 0;
     }
 
     private function interval() as Number {
@@ -500,6 +534,12 @@ class MainView extends WatchUi.View {
         }
         if (_countTicks > 0) {
             _countTicks--;
+        }
+        if (_equipTicks > 0) {
+            _equipTicks--;
+            if (_equipTicks == EQUIP_SLIDE) {
+                showBanner(text(:sunglasses), 0xFFFF55);
+            }
         }
         if (_bannerTicks > 0) {
             _bannerTicks--;
@@ -540,6 +580,9 @@ class MainView extends WatchUi.View {
         if (_bounceTick >= 0) {
             pose = MonkeyStatus.POSE_EAT;
             dy = _bounce[_bounceTick] * SCALE / 2;
+        } else if (_equipTicks > EQUIP_SLIDE) {
+            pose = MonkeyStatus.POSE_CLIMB;
+            dy = (_equipTicks % 4 < 2) ? -6 : 0;
         } else if (_stretchTicks > 0 || _evolveTicks > 0) {
             pose = MonkeyStatus.POSE_STRETCH;
             dy = ((_stretchTicks + _evolveTicks) % 4 < 2) ? -4 : 0;

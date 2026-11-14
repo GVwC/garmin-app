@@ -56,7 +56,7 @@ Goals: Steps / Active minutes / Floors, each on/off with its own target (at leas
 | Streak | consecutive days with every enabled goal met; completing today on day 2+ adds +10 × days (max ×5) |
 | Revived from tiredness | +20 XP, max 3 per day |
 | Finished breathing session | +10 XP, once per day |
-| New territory (Curiosity) | +30 XP, once per day |
+| Climb milestone or distance record (Curiosity) | +30 XP, once per day in total; first climb milestone also unlocks the sunglasses (once ever) |
 | Level | 1 + XP / 300; XP never below 0 |
 | Evolution | leaf from level 3, headband from 6, crown from 10 (accessory patches drawn over any pose) |
 | Fur | Brown / Golden / Silver / Shadow: swaps the `B` and `D` palette entries |
@@ -121,7 +121,7 @@ Box breathing 4-4-4-4 × 2 rounds (~32 s; 1 round in story mode); START or a tap
 
 ## Pixel art
 
-`MonkeyArt` holds sprites as strings (`K` outline, `B` fur, `T` tan, `Y`/`G` banana, `C` ice …): one shared body plus small patches per pose (relax, perk, eat, tired, asleep, alert, stressed, jog ×2, stretch, breathe, pant, cold, hot, climb, bored). `PixelSprite.compile()` packs horizontal runs into one `Number` each. **Compile the body once and poses lazily** — compiling all poses in one `onLayout` trips the watchdog ("Code Executed Too Long").
+`MonkeyArt` holds sprites as strings (`K` outline, `B` fur, `T` tan, `Y`/`G` banana, `C` ice …): one shared body plus small patches per pose (relax, perk, eat, tired, asleep, alert, stressed, jog ×2, stretch, breathe, pant, cold, hot, climb, bored) plus earned items (sunglasses). `PixelSprite.compile()` packs horizontal runs into one `Number` each. **Compile the body once and poses lazily** — compiling all poses in one `onLayout` trips the watchdog ("Code Executed Too Long").
 
 ### Breath (Pulse Ox, read-only)
 
@@ -143,15 +143,40 @@ Readings come from `SensorHistory.getOxygenSaturationHistory` (only exists if th
 
 The sensor is on the wrist and reads several degrees above the air, so thresholds are deliberately conservative (only real cold pulls the wrist sensor under 10 °C). No GPS indoor/outdoor inference (battery).
 
-### Curiosity (daily distance / floors, no GPS)
+### Curiosity (daily distance / floors, no GPS) and earned sunglasses
 
 | State | Trigger | Monkey | Reward / text |
 |---|---|---|---|
 | Content | default | goal pose | — |
 | Routine | last 3 days within ±15 % distance and ≤ 2 floors each | bored, chin on hand | "New direction today?" |
-| Adventurous | today beats the 7-day best distance (≥ 3 km) or floors (≥ 5) | plants a flag | +30 XP once per day, "New territory!" |
+| **Climb milestone** | Garmin floors today ≥ 10 (~30 m), or a new 7-day floors best ≥ 5 | plants a flag | +30 XP (shared daily explore bonus), "Climb milestone +30"; **first time ever: sunglasses** |
+| Distance record | today beats the 7-day best distance (≥ 3 km) | plants a flag | +30 XP (same daily bonus), "Distance record +30" |
 
-Route novelty and compass bearings would need GPS tracks of other activities, which apps cannot read; the distance/floors version keeps the "discovery" idea at zero battery cost.
+**Sunglasses unlock** (`MonkeyModel.unlockSunglasses`): on the first live climb milestone the unlock is stored once (`unlocks` bit flag) and the dashboard plays it: ~1 s celebration (flag pose bouncing, XP banner), then the sunglasses slide down onto the eyes with "Sunglasses earned!"; afterwards they are drawn over every pose. The +30 XP stays once per day for distance *or* climb. Story mode replays the same sequence at scene 16:30 without writing the unlock, XP or anything else: in story the sunglasses are worn exactly from the climb scene on (UP takes them off again), so replays are deterministic.
+
+Why floors and not GPS/altitude (verified against SDK 9.1.0 docs):
+
+| Signal | API | Source known? | Verdict for the demo build |
+|---|---|---|---|
+| Floors / metres climbed | `ActivityMonitor.Info.floorsClimbed`, `metersClimbed` (fēnix 7 Pro listed) | Garmin's barometric floor count, firmware-filtered, counted while walking | **GO** — already read, no permission, no drift reward |
+| Altitude | `Activity.Info.altitude`, `Sensor.Info.altitude` | "Barometer or GPS, most accurate source" — **the app cannot tell which** | not used |
+| Ambient pressure | `Activity.Info.ambientPressure` (smoothed), `rawAmbientPressure` (fēnix 7 Pro listed) | barometric | **NO-GO now**: weather drift is several metres/hour; needs outdoor tuning |
+| GPS fix | `Position.enableLocationEvents(LOCATION_CONTINUOUS, …)`, `Position.Info.accuracy` (`QUALITY_*`), `.when`, `.position`; permission `Positioning` | GPS | **NO-GO now**: APIs exist, but fix time, poor reception and stationary drift can only be validated outdoors on the watch |
+
+#### Explore Walk (designed, not built)
+
+An opt-in foreground mode, only after an outdoor test passes:
+
+- **Start**: menu *Explore walk* → `Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition))` in `onShow` (adds the `Positioning` permission). Nothing in background or glance.
+- **Stop / cleanup**: BACK, a Stop item, a 45-minute timeout, or leaving the screen (`onHide`) all call `enableLocationEvents(Position.LOCATION_DISABLE, null)`.
+- **Fix filter**: use a fix only if `accuracy >= QUALITY_GOOD`, `when` is ≤ 10 s old, and the previous 3 fixes were good too. Ignore moves < 25 m from the last accepted point (stationary drift) and jumps implying > 15 km/h on foot (multipath).
+- **New area**: snap accepted fixes to ~200 m grid cells and keep only cell IDs (no coordinates) in a ring buffer of 64 Numbers. Entering an unseen cell with 3 accepted fixes inside it = "New area". Bounded storage, no route history.
+- **Climb (optional)**: ambient-pressure drop ≥ 1.2 hPa (~10 m) within 5 min while cadence ≥ 60, to separate climbing from weather. Floors remain the default.
+- **Simulator** can check the state machine with simulated positions/FIT playback; **outdoor watch test** must check time-to-fix, reception under trees/buildings, stationary drift, pressure noise and battery.
+
+#### Next reward (picked from the backlog)
+
+**Turtle companion for a step streak** (3 days in a row with every goal met): uses the existing streak, no new sensors, and the story already reaches streak 3 at 18:00. Not chosen: party hat (needs a weekly goal model), firefly (needs a calm/breathing streak counter), owl (no sleep data; a Body Battery recharge streak needs daily peaks stored), fishbowl (no hydration logging on the watch), wristband (simulator doesn't set active minutes), scarf (wrist temperature is too biased for a fair milestone).
 
 ### Sleep
 

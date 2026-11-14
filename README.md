@@ -18,7 +18,7 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 - **Calm vital** (Garmin stress + wrist HR vs resting HR, cross-checked with cadence so workouts are never stress): Calm · Alert · Stressed · Exercising.
 - **Breath vital** (Pulse Ox history, read-only, non-diagnostic): Normal · Low · Concerning.
 - **Warmth vital** (watch temperature, conservative for wrist bias): OK · Cold · Hot.
-- **Curiosity vital** (distance/floors vs your week): Content · Routine · Adventurous (+30 XP "new territory").
+- **Curiosity vital** (distance/floors vs your week): Content · Routine · Distance record · **Climb milestone** (Garmin floors ≥ 10 today or a new weekly best) — +30 XP once a day; the first climb milestone **unlocks sunglasses** for good.
 - **Guided breathing:** box breathing (~30 s, START/tap skips) with an animated ring, the monkey breathing along and live heart rate.
 - **Reminders:** a background check every 30 min (no sensors, history only) with quiet hours, cooldowns and a daily cap; asks you to open the app when the monkey needs you.
 - **Glance:** status or goal progress in the widget list.
@@ -35,7 +35,7 @@ Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHI
 | **UP / DOWN** | Switch the goal on the counter (2+ goals) | Previous / next scenario | — |
 | **BACK** | Exit app | Leave demo | Back to dashboard |
 
-Story scenes: 07:30 low morning recharge (Body Battery 38/100) → 10:30 still (reminder) → walk (count-up) → back on track (+XP) → 13:00 under half (reminder) → 15:10 stressed (reminder → breathe) → calm → new route (+XP) → 18:00 goals met (evolves) → night → day 2 missed (recap) → journey → extra states.
+Story scenes: 07:30 low morning recharge (Body Battery 38/100) → 10:30 still (reminder) → walk (count-up) → back on track (+XP) → 13:00 under half (reminder) → 15:10 stressed (reminder → breathe) → calm → climb milestone (+XP, sunglasses) → 18:00 goals met (evolves) → night → day 2 missed (recap) → journey → extra states.
 
 ## Build and run
 

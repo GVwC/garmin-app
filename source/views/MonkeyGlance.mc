@@ -35,9 +35,10 @@ class MonkeyGlance extends WatchUi.GlanceView {
         if (msg != MonkeyStatus.MSG_NONE) {
             var ids = [Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
                 Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8,
-                Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13];
+                Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13, Rez.Strings.St14];
             line = load(ids[msg]);
-            var good = msg == MonkeyStatus.MSG_EXERCISING || msg == MonkeyStatus.MSG_ADVENTUROUS;
+            var good = msg == MonkeyStatus.MSG_EXERCISING || msg == MonkeyStatus.MSG_ADVENTUROUS
+                || msg == MonkeyStatus.MSG_CLIMB;
             dc.setColor(good ? 0x55FF55 : 0xFFAA00, Graphics.COLOR_TRANSPARENT);
         } else if (value == null) {
             line = load(Rez.Strings.Unavailable);

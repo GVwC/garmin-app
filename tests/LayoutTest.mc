@@ -66,13 +66,15 @@ function everyScreenFitsTheRoundDisplay(logger as Logger) as Boolean {
     // Dashboard header (y=30): longest normal line and the event banners.
     var lv = res(Rez.Strings.Level);
     c.check(name + " " + lv + " 12 12,345 XP", xt, 35, 0);
-    c.check(res(Rez.Strings.Explored) + " +30 XP", xt, 35, 0);
+    c.check(res(Rez.Strings.Explored) + " +30", xt, 35, 0);
     c.check(res(Rez.Strings.Breathed) + " +10 XP", xt, 35, 0);
     c.check(res(Rez.Strings.Revived) + " +20 XP", xt, 35, 0);
     c.check(res(Rez.Strings.GoalHit) + " +350 XP", xt, 35, 0);
     c.check(res(Rez.Strings.GoalMissed) + " -150 XP", xt, 35, 0);
     c.check(res(Rez.Strings.Evolved) + " " + res(Rez.Strings.Stage3) + "!", xt, 35, 0);
     c.check(res(Rez.Strings.Calmed), xt, 35, 0);
+    c.check(res(Rez.Strings.Climbed) + " +30", xt, 35, 0);
+    c.check(res(Rez.Strings.Sunglasses), xt, 35, 0);
     // Goal counter (y=176, FONT_TINY).
     c.check("10,000 / 10,000 " + res(Rez.Strings.UnitSteps), Graphics.FONT_TINY, 172, 0);
     c.check("60 / 60 " + res(Rez.Strings.UnitActive), Graphics.FONT_TINY, 172, 0);
@@ -80,14 +82,14 @@ function everyScreenFitsTheRoundDisplay(logger as Logger) as Boolean {
     // Status lines (y=216 / 236).
     c.checkAll([Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3, Rez.Strings.St4,
         Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8, Rez.Strings.St9,
-        Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13, Rez.Strings.HintLive] as Array<ResourceId>, xt, 208);
+        Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13, Rez.Strings.St14, Rez.Strings.HintLive] as Array<ResourceId>, xt, 208);
     c.checkAll([Rez.Strings.Dm0, Rez.Strings.Dm1, Rez.Strings.Dm2, Rez.Strings.Dm3, Rez.Strings.Dm4,
         Rez.Strings.Dm5, Rez.Strings.Dm6, Rez.Strings.Dm7, Rez.Strings.Dm8, Rez.Strings.Dm9,
         Rez.Strings.Dm10, Rez.Strings.Dm11, Rez.Strings.Dm12, Rez.Strings.Dm13, Rez.Strings.Dm14,
         Rez.Strings.Dm15, Rez.Strings.Dm16, Rez.Strings.Dm17, Rez.Strings.Dm18, Rez.Strings.Dm19] as Array<ResourceId>, xt, 208);
     c.checkAll([Rez.Strings.Ac0, Rez.Strings.Ac1, Rez.Strings.Ac2, Rez.Strings.Ac3, Rez.Strings.Ac4,
         Rez.Strings.Ac5, Rez.Strings.Ac6, Rez.Strings.Ac7, Rez.Strings.Ac8, Rez.Strings.Ac9,
-        Rez.Strings.Ac10, Rez.Strings.Ac11, Rez.Strings.Ac12, Rez.Strings.Ac13,
+        Rez.Strings.Ac10, Rez.Strings.Ac11, Rez.Strings.Ac12, Rez.Strings.Ac13, Rez.Strings.Ac14,
         Rez.Strings.HintMenu, Rez.Strings.HintDemo] as Array<ResourceId>, xt, 227);
     c.check(res(Rez.Strings.BodyBattery) + " 100/100", xt, 227, 0);
     c.check(res(Rez.Strings.Demo), xt, 12, 0);
