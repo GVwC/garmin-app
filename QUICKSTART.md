@@ -1,8 +1,17 @@
 # Quickstart — copy & paste
 
+## First time (teammates)
+
+```powershell
+cd C:\projects
+git clone https://github.com/GVwC/garmin-app.git
+```
+
+Then once per machine: install VS Code + the **Monkey C** extension, then `Ctrl+Shift+P` → **Monkey C: Verify Installation** (installs SDK via SDK Manager, needs a Garmin account) → in SDK Manager download SDK **9.1.0** and the **fēnix 7 Pro** device → `Ctrl+Shift+P` → **Monkey C: Generate a Developer Key** (your own key, never commit it). Details: [docs/SETUP.md](docs/SETUP.md).
+
 ## Option A: VS Code only (no commands needed)
 
-1. `File → Open Folder…` → `C:\projects\garmin-connectiq-starter`
+1. `File → Open Folder…` → `C:\projects\garmin-app`
 2. **F5** → choose **Run App (fenix 7 Pro)** → simulator opens, app runs.
 3. Change code → **F5** again to rebuild and restart.
 4. Tests: Run and Debug dropdown → **Run Tests (fenix 7 Pro)** → F5.
@@ -25,7 +34,7 @@ App logs (`Log.debug`, `System.println`) show in the **Debug Console** (F5) or t
 ## Option B: PowerShell
 
 ```powershell
-cd C:\projects\garmin-connectiq-starter
+cd C:\projects\garmin-app
 ```
 
 ```powershell
