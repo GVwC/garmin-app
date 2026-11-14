@@ -19,8 +19,19 @@ module ActivityService {
     }
 }
 
-// Finished days for XP catch-up (foreground only).
+// Finished days for XP catch-up and the Curiosity vital (foreground only).
 module ActivityHistory {
+
+    // Today's distance / floors against the last 7 days (Vitals.curiosityState).
+    function curiosity() as Number {
+        var info = ActivityMonitor.getInfo();
+        var past = [] as Array<Array<Number?> >;
+        var hist = ActivityMonitor.getHistory();
+        for (var i = 0; i < hist.size(); i++) {
+            past.add([hist[i].distance, hist[i].floorsClimbed] as Array<Number?>);
+        }
+        return Vitals.curiosityState(info.distance, info.floorsClimbed, past);
+    }
 
     // Max 7 days, newest first, as [day, value or null].
     function days(goalType as Number) as Array<Array<Number?> > {

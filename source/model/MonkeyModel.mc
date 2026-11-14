@@ -9,7 +9,7 @@ import Toybox.Lang;
 //   - Each finished day since the last check is settled from watch history:
 //     goal met -> +XP_GOAL (unless already rewarded live), missed -> -XP_MISS, no data -> nothing.
 //   - Bonuses: revived from tiredness +XP_REVIVE (max 3/day, counted by VitalsModel),
-//     a finished breathing session +XP_BREATH once per day.
+//     a finished breathing session +XP_BREATH once per day, new territory +XP_EXPLORE once per day.
 //   - XP never drops below 0. Level = 1 + xp / XP_PER_LEVEL.
 // Demo mode works on a copy of XP and never touches stored state.
 // Nothing is written to storage until load() has been called (the app does; unit tests don't).
@@ -23,6 +23,7 @@ class MonkeyModel {
     static const XP_MISS = 50;
     static const XP_REVIVE = 20;
     static const XP_BREATH = 10;
+    static const XP_EXPLORE = 30;
     static const XP_PER_LEVEL = 300;
     static const MAX_CATCH_UP_DAYS = 7;
 
@@ -31,10 +32,12 @@ class MonkeyModel {
     static const EV_MISSED = 1;
     static const EV_REVIVE = 2;
     static const EV_BREATH = 3;
+    static const EV_EXPLORE = 4;
 
     private static const KEY_REWARD_DAY = "rewardDay";
     private static const KEY_EVAL_DAY = "lastEvalDay";
     private static const KEY_BREATH_DAY = "breathDay";
+    private static const KEY_EXPLORE_DAY = "exploreDay";
 
     // Persisted (live only).
     private var _goalType as Number = Goals.GOAL_STEPS;
@@ -43,6 +46,7 @@ class MonkeyModel {
     private var _rewardDay as Number? = null;
     private var _lastEvalDay as Number? = null;
     private var _breathDay as Number? = null;
+    private var _exploreDay as Number? = null;
 
     private var _persist as Boolean = false;
 
@@ -170,6 +174,18 @@ class MonkeyModel {
         return true;
     }
 
+    // Once per day; returns true when XP was awarded.
+    function addExploreBonus() as Boolean {
+        if (!_demo) {
+            if (_exploreDay != null && _exploreDay == _today) {
+                return false;
+            }
+            _exploreDay = _today;
+        }
+        addXp(XP_EXPLORE, EV_EXPLORE);
+        return true;
+    }
+
     private function addXp(xp as Number, kind as Number) as Void {
         var before = getXp();
         if (_demo) {
@@ -228,6 +244,8 @@ class MonkeyModel {
             announce(_demoXp - before, false, false, EV_MISSED);
         } else if (effect == DemoScenarios.EFFECT_REVIVE) {
             addXp(XP_REVIVE, EV_REVIVE);
+        } else if (effect == DemoScenarios.EFFECT_EXPLORE) {
+            addXp(XP_EXPLORE, EV_EXPLORE);
         }
     }
 
@@ -337,6 +355,7 @@ class MonkeyModel {
         _rewardDay = readOptional(KEY_REWARD_DAY);
         _lastEvalDay = readOptional(KEY_EVAL_DAY);
         _breathDay = readOptional(KEY_BREATH_DAY);
+        _exploreDay = readOptional(KEY_EXPLORE_DAY);
     }
 
     function save() as Void {
@@ -349,6 +368,7 @@ class MonkeyModel {
         Storage.setValue(KEY_REWARD_DAY, _rewardDay);
         Storage.setValue(KEY_EVAL_DAY, _lastEvalDay);
         Storage.setValue(KEY_BREATH_DAY, _breathDay);
+        Storage.setValue(KEY_EXPLORE_DAY, _exploreDay);
     }
 
     private static function readNumber(key as String, fallback as Number) as Number {

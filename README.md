@@ -11,10 +11,13 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 - **XP and levels:** goal +100, missed day −50 (settled from the 7-day history even if the app wasn't opened), revived +20 (max 3/day), breathing session +10 (1/day). 300 XP per level.
 - **Energy vital** (move bar + Body Battery): Rested · Low recharge · Inactive (~90 min still) · Exhausted · Night — with "Revived" when you recover.
 - **Calm vital** (Garmin stress + wrist HR vs resting HR, cross-checked with cadence so workouts are never stress): Calm · Alert · Stressed · Exercising.
+- **Breath vital** (Pulse Ox history, read-only, non-diagnostic): Normal · Low · Concerning.
+- **Warmth vital** (watch temperature, conservative for wrist bias): OK · Cold · Hot.
+- **Curiosity vital** (distance/floors vs your week): Content · Routine · Adventurous (+30 XP "new territory").
 - **Guided breathing:** box breathing (~1 min) with an animated ring, the monkey breathing along and live heart rate.
 - **Reminders:** a background check every 30 min (no sensors, history only) with quiet hours, cooldowns and a daily cap; asks you to open the app when the monkey needs you.
 - **Glance:** status or goal progress in the widget list.
-- **DEMO mode:** 12 scripted scenarios covering every state, never saved.
+- **DEMO mode:** 18 scripted scenarios covering every state, never saved.
 
 Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -27,7 +30,7 @@ Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHI
 | **UP / DOWN** | — | Previous / next scenario | — |
 | **BACK** | Exit app | Leave demo | Back to dashboard |
 
-Demo scenarios: goal 20 % → 65 % → reached (+XP, bounce) → missed day (−XP) → still 90 min → still 2 h → low recharge → exhausted → alert → stressed → exercising → revived (+XP).
+Demo scenarios: goal 20 % → 65 % → reached (+XP, bounce) → missed day (−XP) → still 90 min → still 2 h → low recharge → exhausted → alert → stressed → exercising → breath low → breath low again → cold → hot → adventurous (+XP) → routine → revived (+XP).
 
 ## Build and run
 
@@ -35,7 +38,7 @@ Demo scenarios: goal 20 % → 65 % → reached (+XP, bounce) → missed day (−
 
 ```powershell
 .\scripts\ciq.ps1 build   # compile -> bin\GarminStarter.prg
-.\scripts\ciq.ps1 test    # unit tests in the simulator (21)
+.\scripts\ciq.ps1 test    # unit tests in the simulator
 .\scripts\ciq.ps1 run     # build + launch in the simulator
 ```
 
@@ -58,7 +61,7 @@ Simulator tips:
 | Permission | Why |
 |---|---|
 | Background | 30-min vitals check and reminders |
-| SensorHistory | Body Battery and stress history |
+| SensorHistory | Body Battery, stress, Pulse Ox and temperature history |
 | UserProfile | resting HR, wake/sleep time (quiet hours) |
 | Sensor | live heart rate during the breathing session only |
 

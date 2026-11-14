@@ -17,6 +17,10 @@ class VitalsSnapshot {
     var restingHr as Number? = null;    // personal resting HR baseline
     var hrSustainedPct as Number? = null; // lowest HR elevation % over the last ~5 min
     var stepsPerMin as Number? = null;  // recent cadence; null if unknown
+    var spo2 as Number? = null;         // latest Pulse Ox reading while awake (only if the user enabled Pulse Ox)
+    var spo2LowStreak as Number = 0;    // newest consecutive readings below SPO2_OK
+    var tempC as Number? = null;        // latest watch temperature (wrist-biased: reads warmer than the air)
+    var coldSustained as Boolean = false; // every temperature sample of the last ~15 min < COLD_C
 
     function initialize() {
     }
@@ -38,6 +42,14 @@ class VitalsSnapshot {
 //   ALERT          not moving and stress >= ALERT_STRESS, or HR >= ALERT_HR_PCT over resting
 //                  Recovers only when stress <= CALM_STRESS and HR <= CALM_HR_PCT (hysteresis).
 //   CALM           otherwise (also when there is no data)
+// Breath (Pulse Ox, read-only: apps cannot trigger a measurement; never diagnostic)
+//   NORMAL >= 95 % · LOW 90-94 % (single reading) · CONCERNING < 90 % or low on 2+ readings in a row
+// Warmth (watch temperature sensor; on the wrist it reads several degrees above the air)
+//   COLD           every reading of the last ~15 min below COLD_C (only real cold gets the wrist that low)
+//   HOT            reading >= HOT_C and HR raised without movement
+// Curiosity (daily distance / floors vs the last 7 days; no GPS)
+//   ADVENTUROUS    today beats the 7-day best distance (>= 3 km) or floors (>= 5): reward
+//   ROUTINE        last 3 days nearly identical distance (+-15 %) and almost no floors
 (:background, :glance)
 module Vitals {
 
@@ -52,6 +64,18 @@ module Vitals {
     const CALM_STRESSED = 2;
     const CALM_EXERCISING = 3;
 
+    const BREATH_NORMAL = 0;
+    const BREATH_LOW = 1;
+    const BREATH_CONCERNING = 2;
+
+    const WARMTH_OK = 0;
+    const WARMTH_COLD = 1;
+    const WARMTH_HOT = 2;
+
+    const CURIOUS_CONTENT = 0;
+    const CURIOUS_ROUTINE = 1;
+    const CURIOUS_ADVENTUROUS = 2;
+
     // Thresholds (tune here).
     const RECHARGE_MIN = 50;       // Body Battery peak below this = low recharge
     const RECHARGE_GRACE_MIN = 60; // judge recharge only 1 h after wake time
@@ -65,6 +89,14 @@ module Vitals {
     const ALERT_HR_PCT = 15;
     const STRESSED_HR_PCT = 25;
     const CALM_HR_PCT = 5;
+    const SPO2_OK = 95;
+    const SPO2_LOW = 90;
+    const COLD_C = 10;
+    const HOT_C = 35;
+    const EXPLORE_MIN_CM = 300000; // 3 km (ActivityMonitor distance is in cm)
+    const EXPLORE_MIN_FLOORS = 5;
+    const ROUTINE_SPREAD_PCT = 15;
+    const ROUTINE_MAX_FLOORS = 2;
 
     function isAwake(s as VitalsSnapshot) as Boolean {
         return inWindow(s.minuteOfDay, s.wakeMin, s.sleepMin);
@@ -191,5 +223,79 @@ module Vitals {
         }
         var v = 100 - pct * 2;
         return v < 0 ? 0 : (v > 100 ? 100 : v);
+    }
+
+    // ---------- Breath ----------
+
+    function breathState(s as VitalsSnapshot) as Number {
+        var v = s.spo2;
+        if (v == null || v >= SPO2_OK) {
+            return BREATH_NORMAL;
+        }
+        if (v < SPO2_LOW || s.spo2LowStreak >= 2) {
+            return BREATH_CONCERNING;
+        }
+        return BREATH_LOW;
+    }
+
+    // ---------- Warmth ----------
+
+    function warmthState(s as VitalsSnapshot) as Number {
+        if (s.coldSustained) {
+            return WARMTH_COLD;
+        }
+        var t = s.tempC;
+        var pct = hrPct(s);
+        if (t != null && t >= HOT_C && !isMoving(s) && pct != null && pct >= ALERT_HR_PCT) {
+            return WARMTH_HOT;
+        }
+        return WARMTH_OK;
+    }
+
+    // ---------- Curiosity ----------
+
+    // past: finished days, newest first, as [distanceCm, floors] (null values allowed).
+    function curiosityState(todayCm as Number?, todayFloors as Number?, past as Array<Array<Number?> >) as Number {
+        if (past.size() < 3) {
+            return CURIOUS_CONTENT;
+        }
+        var bestCm = 0;
+        var bestFloors = 0;
+        for (var i = 0; i < past.size(); i++) {
+            var d = past[i][0];
+            var f = past[i][1];
+            if (d != null && d > bestCm) {
+                bestCm = d;
+            }
+            if (f != null && f > bestFloors) {
+                bestFloors = f;
+            }
+        }
+        if (todayCm != null && todayCm > bestCm && todayCm >= EXPLORE_MIN_CM) {
+            return CURIOUS_ADVENTUROUS;
+        }
+        if (todayFloors != null && todayFloors > bestFloors && todayFloors >= EXPLORE_MIN_FLOORS) {
+            return CURIOUS_ADVENTUROUS;
+        }
+        // Routine: the last three days look the same.
+        var lo = null as Number?;
+        var hi = null as Number?;
+        for (var i = 0; i < 3; i++) {
+            var d = past[i][0];
+            var f = past[i][1];
+            if (d == null || d <= 0 || (f != null && f > ROUTINE_MAX_FLOORS)) {
+                return CURIOUS_CONTENT;
+            }
+            if (lo == null || d < lo) {
+                lo = d;
+            }
+            if (hi == null || d > hi) {
+                hi = d;
+            }
+        }
+        if (lo != null && hi != null && (hi - lo) * 100 <= hi * ROUTINE_SPREAD_PCT) {
+            return CURIOUS_ROUTINE;
+        }
+        return CURIOUS_CONTENT;
     }
 }

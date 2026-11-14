@@ -47,7 +47,8 @@ class MonkeyService extends System.ServiceDelegate {
     }
 
     private function message(kind as Number) as String {
-        var ids = [Rez.Strings.Nudge0, Rez.Strings.Nudge1, Rez.Strings.Nudge2, Rez.Strings.Nudge3, Rez.Strings.Nudge4];
+        var ids = [Rez.Strings.Nudge0, Rez.Strings.Nudge1, Rez.Strings.Nudge2, Rez.Strings.Nudge3,
+            Rez.Strings.Nudge4, Rez.Strings.Nudge5, Rez.Strings.Nudge6, Rez.Strings.Nudge7];
         return Application.loadResource(ids[kind]) as String;
     }
 }

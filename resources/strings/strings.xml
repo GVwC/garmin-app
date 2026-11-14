@@ -18,6 +18,12 @@
     <string id="St5" scope="glance">Low recharge</string>
     <string id="St6" scope="glance">HR up, not moving</string>
     <string id="St7" scope="glance">On the move!</string>
+    <string id="St8" scope="glance">SpO2 low for a bit</string>
+    <string id="St9" scope="glance">Bit out of breath</string>
+    <string id="St10" scope="glance">Getting cold</string>
+    <string id="St11" scope="glance">Hot out there</string>
+    <string id="St12" scope="glance">New territory!</string>
+    <string id="St13" scope="glance">Same old routine</string>
 
     <!-- Recommendations, index = MonkeyStatus.MSG_* -->
     <string id="Ac0">Walk now, bed early</string>
@@ -28,6 +34,12 @@
     <string id="Ac5">Ease in, bed early</string>
     <string id="Ac6">START: 3 breaths</string>
     <string id="Ac7">Good stress, go!</string>
+    <string id="Ac8">Lasts? Ask someone</string>
+    <string id="Ac9">START: slow breaths</string>
+    <string id="Ac10">Head somewhere warm</string>
+    <string id="Ac11">Water and shade</string>
+    <string id="Ac12">Explorer bonus!</string>
+    <string id="Ac13">New direction today?</string>
 
     <!-- Background reminders, index = VitalsModel.NUDGE_* -->
     <string id="Nudge0" scope="background">Running on empty. Walk 5 min now and go to bed early tonight.</string>
@@ -35,6 +47,9 @@
     <string id="Nudge2" scope="background">Still for 90 min. A 5-minute walk wakes your monkey up.</string>
     <string id="Nudge3" scope="background">Short recharge last night. Ease into today, lights out early.</string>
     <string id="Nudge4" scope="background">Your monkey is hungry: under half your goal so far.</string>
+    <string id="Nudge5" scope="background">Your Pulse Ox readings have been low for a bit. Sit down and take slow breaths; if it continues, check in with someone.</string>
+    <string id="Nudge6" scope="background">Getting cold out there. Head somewhere warm.</string>
+    <string id="Nudge7" scope="background">Hot out there. Grab some water and shade.</string>
 
     <string id="GoalSteps">Steps</string>
     <string id="GoalActive">Active minutes</string>
@@ -47,6 +62,7 @@
     <string id="Revived">I'm back!</string>
     <string id="Calmed">Calm again</string>
     <string id="Breathed">Breather done</string>
+    <string id="Explored">New territory!</string>
 
     <string id="HintLive">START: goal</string>
     <string id="HintMenu">Hold UP: menu</string>
@@ -65,7 +81,13 @@
     <string id="Dm8">alert</string>
     <string id="Dm9">stressed</string>
     <string id="Dm10">exercising</string>
-    <string id="Dm11">revived</string>
+    <string id="Dm11">breath low</string>
+    <string id="Dm12">breath low again</string>
+    <string id="Dm13">cold</string>
+    <string id="Dm14">hot</string>
+    <string id="Dm15">adventurous</string>
+    <string id="Dm16">routine</string>
+    <string id="Dm17">revived</string>
 
     <string id="MenuTitle">Monkey Miles</string>
     <string id="MenuGoal">Goal</string>

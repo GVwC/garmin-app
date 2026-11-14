@@ -8,7 +8,7 @@ import Toybox.Lang;
 //   - reminders enabled, user awake (profile wake/sleep window = quiet hours otherwise)
 //   - at most MAX_NUDGES_PER_DAY per day and MIN_GAP_SEC between any two nudges
 //   - the same kind again only after KIND_COOLDOWN_SEC; LOW_RECHARGE and GOAL once per day
-//   - priority: EXHAUSTED > STRESSED > INACTIVE > LOW_RECHARGE > GOAL (midday, < 50 %)
+//   - priority: BREATH > EXHAUSTED > STRESSED > COLD > HOT > INACTIVE > LOW_RECHARGE > GOAL (midday, < 50 %)
 // When the user looks at the app, markSeen() counts as a nudge for the active conditions,
 // so the background never repeats what the user just read.
 (:background)
@@ -24,7 +24,10 @@ class VitalsModel {
     static const NUDGE_INACTIVE = 2;
     static const NUDGE_LOW_RECHARGE = 3;
     static const NUDGE_GOAL = 4;
-    static const NUDGE_KINDS = 5;
+    static const NUDGE_BREATH = 5;
+    static const NUDGE_COLD = 6;
+    static const NUDGE_HOT = 7;
+    static const NUDGE_KINDS = 8;
 
     static const MAX_REVIVES_PER_DAY = 3;
     static const MAX_NUDGES_PER_DAY = 6;
@@ -35,7 +38,7 @@ class VitalsModel {
     // Epoch seconds, refreshed by the app while the dashboard is visible, 0 when hidden.
     static const KEY_FG_SEEN = "fgSeen";
 
-    private static const KEY_STATE = "vState";   // [day, energy, calm, recoveredDay, revivesToday, pendingRevives]
+    private static const KEY_STATE = "vState";   // [day, energy, calm, recoveredDay, revivesToday, pendingRevives, breath, warmth]
     private static const KEY_NUDGES = "vNudges"; // [lastAny, countToday, at0..at4]
     private static const KEY_ENABLED = "vEnabled";
 
@@ -45,10 +48,12 @@ class VitalsModel {
     private var _recoveredDay as Number = -1;
     private var _revivesToday as Number = 0;
     private var _pendingRevives as Number = 0;
+    private var _breath as Number = Vitals.BREATH_NORMAL;
+    private var _warmth as Number = Vitals.WARMTH_OK;
 
     private var _lastNudge as Number = 0;
     private var _nudgesToday as Number = 0;
-    private var _nudgeAt as Array<Number> = [0, 0, 0, 0, 0];
+    private var _nudgeAt as Array<Number> = [0, 0, 0, 0, 0, 0, 0, 0];
     private var _enabled as Boolean = true;
     private var _persist as Boolean = false;
 
@@ -86,6 +91,8 @@ class VitalsModel {
         }
         _energy = energy;
         _calm = calm;
+        _breath = Vitals.breathState(s);
+        _warmth = Vitals.warmthState(s);
         save();
         return event;
     }
@@ -96,6 +103,14 @@ class VitalsModel {
 
     function getCalm() as Number {
         return _calm;
+    }
+
+    function getBreath() as Number {
+        return _breath;
+    }
+
+    function getWarmth() as Number {
+        return _warmth;
     }
 
     // Revives not yet turned into XP (the background can detect them while the app is closed).
@@ -122,11 +137,19 @@ class VitalsModel {
     // Conditions that would be worth a nudge right now, in priority order.
     function activeKinds(s as VitalsSnapshot, goalPermille as Number?) as Array<Number> {
         var kinds = [] as Array<Number>;
+        if (_breath == Vitals.BREATH_CONCERNING) {
+            kinds.add(NUDGE_BREATH);
+        }
         if (_energy == Vitals.ENERGY_EXHAUSTED) {
             kinds.add(NUDGE_EXHAUSTED);
         }
         if (_calm == Vitals.CALM_STRESSED) {
             kinds.add(NUDGE_STRESSED);
+        }
+        if (_warmth == Vitals.WARMTH_COLD) {
+            kinds.add(NUDGE_COLD);
+        } else if (_warmth == Vitals.WARMTH_HOT) {
+            kinds.add(NUDGE_HOT);
         }
         if (_energy == Vitals.ENERGY_INACTIVE) {
             kinds.add(NUDGE_INACTIVE);
@@ -187,13 +210,17 @@ class VitalsModel {
     function load() as Void {
         _persist = true;
         var st = Storage.getValue(KEY_STATE);
-        if (st instanceof Array && st.size() == 6) {
+        if (st instanceof Array && st.size() >= 6) {
             _day = num(st[0], -1);
             _energy = num(st[1], Vitals.ENERGY_RESTED);
             _calm = num(st[2], Vitals.CALM_CALM);
             _recoveredDay = num(st[3], -1);
             _revivesToday = num(st[4], 0);
             _pendingRevives = num(st[5], 0);
+            if (st.size() >= 8) {
+                _breath = num(st[6], Vitals.BREATH_NORMAL);
+                _warmth = num(st[7], Vitals.WARMTH_OK);
+            }
         }
         var nd = Storage.getValue(KEY_NUDGES);
         if (nd instanceof Array && nd.size() == 2 + NUDGE_KINDS) {
@@ -211,7 +238,7 @@ class VitalsModel {
         if (!_persist) {
             return;
         }
-        Storage.setValue(KEY_STATE, [_day, _energy, _calm, _recoveredDay, _revivesToday, _pendingRevives]);
+        Storage.setValue(KEY_STATE, [_day, _energy, _calm, _recoveredDay, _revivesToday, _pendingRevives, _breath, _warmth]);
         var nd = [_lastNudge, _nudgesToday] as Array<Storage.ValueType>;
         for (var i = 0; i < NUDGE_KINDS; i++) {
             nd.add(_nudgeAt[i]);

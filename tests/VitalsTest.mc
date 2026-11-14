@@ -18,6 +18,11 @@ function snap() as VitalsSnapshot {
     return s;
 }
 
+// Status for energy/calm only (other vitals normal).
+function msgOf(energy as Number, calm as Number, deep as Boolean) as Number {
+    return MonkeyStatus.message(energy, calm, deep, Vitals.BREATH_NORMAL, Vitals.WARMTH_OK, Vitals.CURIOUS_CONTENT);
+}
+
 (:test)
 function energyStatesFollowMoveBarAndRecharge(logger as Logger) as Boolean {
     var s = snap();
@@ -216,14 +221,14 @@ function seenConditionsAreNotNudgedAgain(logger as Logger) as Boolean {
 
 (:test)
 function statusPriorityAndPoses(logger as Logger) as Boolean {
-    var msg = MonkeyStatus.message(Vitals.ENERGY_EXHAUSTED, Vitals.CALM_STRESSED, false);
+    var msg = msgOf(Vitals.ENERGY_EXHAUSTED, Vitals.CALM_STRESSED, false);
     Test.assertEqual(msg, MonkeyStatus.MSG_EXHAUSTED);
     Test.assert(MonkeyStatus.takesOverFace(msg));
-    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_INACTIVE, Vitals.CALM_STRESSED, false), MonkeyStatus.MSG_STRESSED);
-    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_INACTIVE, Vitals.CALM_ALERT, true), MonkeyStatus.MSG_DEEP_STILL);
-    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_LOW_RECHARGE, Vitals.CALM_ALERT, false), MonkeyStatus.MSG_LOW_RECHARGE);
-    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_RESTED, Vitals.CALM_EXERCISING, false), MonkeyStatus.MSG_EXERCISING);
-    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_RESTED, Vitals.CALM_CALM, false), MonkeyStatus.MSG_NONE);
+    Test.assertEqual(msgOf(Vitals.ENERGY_INACTIVE, Vitals.CALM_STRESSED, false), MonkeyStatus.MSG_STRESSED);
+    Test.assertEqual(msgOf(Vitals.ENERGY_INACTIVE, Vitals.CALM_ALERT, true), MonkeyStatus.MSG_DEEP_STILL);
+    Test.assertEqual(msgOf(Vitals.ENERGY_LOW_RECHARGE, Vitals.CALM_ALERT, false), MonkeyStatus.MSG_LOW_RECHARGE);
+    Test.assertEqual(msgOf(Vitals.ENERGY_RESTED, Vitals.CALM_EXERCISING, false), MonkeyStatus.MSG_EXERCISING);
+    Test.assertEqual(msgOf(Vitals.ENERGY_RESTED, Vitals.CALM_CALM, false), MonkeyStatus.MSG_NONE);
 
     Test.assertEqual(MonkeyStatus.pose(MonkeyStatus.POSE_EAT, MonkeyStatus.MSG_NONE, 0), MonkeyStatus.POSE_EAT);
     Test.assertEqual(MonkeyStatus.pose(MonkeyStatus.POSE_EAT, MonkeyStatus.MSG_STILL, 0), MonkeyStatus.POSE_TIRED);
@@ -252,7 +257,81 @@ function bonusesAreCapped(logger as Logger) as Boolean {
     Test.assert(m.addBreathBonus());
     // Demo scenario table stays consistent with the status logic.
     var row = DemoScenarios.row(7);
-    Test.assertEqual(MonkeyStatus.message(row[DemoScenarios.ENERGY], row[DemoScenarios.CALM], row[DemoScenarios.DEEP] == 1),
+    Test.assertEqual(MonkeyStatus.message(row[DemoScenarios.ENERGY], row[DemoScenarios.CALM], row[DemoScenarios.DEEP] == 1,
+        row[DemoScenarios.BREATH], row[DemoScenarios.WARMTH], row[DemoScenarios.CURIOUS]),
         MonkeyStatus.MSG_EXHAUSTED);
+    return true;
+}
+
+(:test)
+function breathIsReadOnlyAndConservative(logger as Logger) as Boolean {
+    var s = snap();
+    Test.assertEqual(Vitals.breathState(s), Vitals.BREATH_NORMAL); // no Pulse Ox data
+    s.spo2 = 96;
+    Test.assertEqual(Vitals.breathState(s), Vitals.BREATH_NORMAL);
+    s.spo2 = 93;
+    s.spo2LowStreak = 1;
+    Test.assertEqual(Vitals.breathState(s), Vitals.BREATH_LOW);
+    s.spo2LowStreak = 2; // still low on the next reading
+    Test.assertEqual(Vitals.breathState(s), Vitals.BREATH_CONCERNING);
+    s.spo2 = 88;
+    s.spo2LowStreak = 1;
+    Test.assertEqual(Vitals.breathState(s), Vitals.BREATH_CONCERNING);
+    // Breath concerning outranks everything, low breath ranks below stress.
+    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_EXHAUSTED, Vitals.CALM_STRESSED, false,
+        Vitals.BREATH_CONCERNING, Vitals.WARMTH_COLD, Vitals.CURIOUS_CONTENT), MonkeyStatus.MSG_BREATH_CONCERNING);
+    Test.assertEqual(MonkeyStatus.message(Vitals.ENERGY_RESTED, Vitals.CALM_STRESSED, false,
+        Vitals.BREATH_LOW, Vitals.WARMTH_OK, Vitals.CURIOUS_CONTENT), MonkeyStatus.MSG_STRESSED);
+    Test.assert(MonkeyStatus.suggestsBreathing(MonkeyStatus.MSG_BREATH_LOW));
+    return true;
+}
+
+(:test)
+function warmthNeedsSustainedColdOrUnexplainedHeat(logger as Logger) as Boolean {
+    var s = snap();
+    s.tempC = 8;
+    Test.assertEqual(Vitals.warmthState(s), Vitals.WARMTH_OK); // a single cold reading is not enough
+    s.coldSustained = true;
+    Test.assertEqual(Vitals.warmthState(s), Vitals.WARMTH_COLD);
+    s = snap();
+    s.tempC = 36;
+    Test.assertEqual(Vitals.warmthState(s), Vitals.WARMTH_OK); // hot but HR normal
+    s.heartRate = 72; // +20 %, not moving
+    Test.assertEqual(Vitals.warmthState(s), Vitals.WARMTH_HOT);
+    s.stepsPerMin = 120; // exercising explains the HR
+    Test.assertEqual(Vitals.warmthState(s), Vitals.WARMTH_OK);
+    return true;
+}
+
+(:test)
+function curiosityRewardsNewBestsAndSpotsRoutine(logger as Logger) as Boolean {
+    var routine = [[400000, 0], [410000, 1], [395000, 0], [200000, 0]] as Array<Array<Number?> >;
+    Test.assertEqual(Vitals.curiosityState(100000, 0, routine), Vitals.CURIOUS_ROUTINE);
+    Test.assertEqual(Vitals.curiosityState(450000, 0, routine), Vitals.CURIOUS_ADVENTUROUS); // new distance best
+    Test.assertEqual(Vitals.curiosityState(100000, 6, routine), Vitals.CURIOUS_ADVENTUROUS); // new floors best
+    var varied = [[400000, 0], [800000, 3], [200000, 0]] as Array<Array<Number?> >;
+    Test.assertEqual(Vitals.curiosityState(100000, 0, varied), Vitals.CURIOUS_CONTENT);
+    Test.assertEqual(Vitals.curiosityState(900000, 0, [[1, 1]] as Array<Array<Number?> >), Vitals.CURIOUS_CONTENT); // too little history
+    // Explorer bonus is once per day.
+    var m = new MonkeyModel();
+    m.update(700, 0, noHistory());
+    Test.assert(m.addExploreBonus());
+    Test.assert(!m.addExploreBonus());
+    Test.assertEqual(m.getXp(), MonkeyModel.XP_EXPLORE);
+    return true;
+}
+
+(:test)
+function newVitalsNudgeWithPriority(logger as Logger) as Boolean {
+    var vm = new VitalsModel();
+    var s = snap();
+    var t = 4000000;
+    s.coldSustained = true;
+    s.spo2 = 88;
+    vm.apply(s, 80);
+    Test.assertEqual(vm.getBreath(), Vitals.BREATH_CONCERNING);
+    Test.assertEqual(vm.getWarmth(), Vitals.WARMTH_COLD);
+    Test.assertEqual(vm.pickNudge(s, 800, t), VitalsModel.NUDGE_BREATH);
+    Test.assertEqual(vm.pickNudge(s, 800, t + 46 * 60), VitalsModel.NUDGE_COLD);
     return true;
 }

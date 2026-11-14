@@ -49,6 +49,7 @@ Data flow (app): **input → delegate → model → `MainView.onModelChanged()` 
 | Finished day settled from 7-day history | met +100 (unless already rewarded), missed −50, no data → 0 |
 | Revived from tiredness | +20 XP, max 3 per day |
 | Finished breathing session | +10 XP, once per day |
+| New territory (Curiosity) | +30 XP, once per day |
 | Level | 1 + XP / 300; XP never below 0 |
 | Goal poses | < 50 % relax · 50–99 % perk · ≥ 100 % eat |
 
@@ -64,6 +65,9 @@ All inputs are values the watch already records (no sensor is switched on for vi
 | Wrist HR (last ~6 min) | `ActivityMonitor.getHeartRateHistory` |
 | Resting HR baseline, wake/sleep time | `UserProfile` (`averageRestingHeartRate`, `restingHeartRate`, `wakeTime`, `sleepTime`) |
 | Cadence | steps delta between snapshots |
+| Pulse Ox (awake, last 4 h) | `SensorHistory.getOxygenSaturationHistory` |
+| Temperature (last 15 min) | `SensorHistory.getTemperatureHistory` |
+| Distance / floors, 7 days | `ActivityMonitor.getInfo()`, `getHistory()` (app only) |
 
 **Sleep is not readable by Connect IQ apps** (no API; open Garmin request). The spec's "sleep < 7 h" is therefore implemented as *low recharge*: today's Body Battery peak < 50, judged one hour after the user's wake time. A rest/nap that adds ≥ 10 Body Battery within 3 h clears it for the day.
 
@@ -87,7 +91,7 @@ All inputs are values the watch already records (no sensor is switched on for vi
 | Stressed | not moving and (stress ≥ 76 for ~5 min or HR > 25 % for ~5 min) | hands over ears, red tint | "START: breathe" → guided breathing | same as Alert; "Calm again" banner |
 | Exercising | moving and HR ≥ 15 % over resting | jogging (2 frames) | "Good stress, go!" | activity ends |
 
-Status priority: Exhausted > Night > Stressed > 2 h still > Inactive > Low recharge > Alert > Exercising > goal pose (`MonkeyStatus`).
+Status priority (`MonkeyStatus`): Breath concerning > Exhausted > Night > Stressed > Cold > Hot > Breath low > 2 h still > Inactive > Low recharge > Alert > Exercising > Adventurous > Routine > goal pose.
 
 ### Guided breathing (BreathView)
 
@@ -98,7 +102,7 @@ Box breathing 4-4-4-4 × 4 rounds (~64 s). The ring and the monkey's chest follo
 `Reminders.sync()` registers `Background.registerForTemporalEvent(30 min)`; the menu toggle removes it.
 
 - **Why 30 min, not 15:** the move bar only changes every 15 min and the thresholds are 90/120 min, so 15-min checks would double the wake-ups (~96/day) for little gain. Each wake-up reads a few history buffers (~ms of CPU) — no GPS, no HR sensor, no radio. Change `Reminders.INTERVAL_SEC` (system minimum is 5 min).
-- **When a nudge is sent** (`VitalsModel.pickNudge`): reminders on, user awake (profile wake–sleep window), ≤ 6 per day, ≥ 45 min between any two, same kind again only after 2 h, low recharge and the midday goal reminder (after 13:00, < 50 %) once per day. Priority: Exhausted > Stressed > Inactive > Low recharge > Goal.
+- **When a nudge is sent** (`VitalsModel.pickNudge`): reminders on, user awake (profile wake–sleep window), ≤ 6 per day, ≥ 45 min between any two, same kind again only after 2 h, low recharge and the midday goal reminder (after 13:00, < 50 %) once per day. Priority: Breath concerning > Exhausted > Stressed > Cold > Hot > Inactive > Low recharge > Goal.
 - **Delivery:** `Background.requestApplicationWake(message)` — the watch vibrates and asks to open the app. (`Notifications.showNotification` is API 5.1+ but not listed for the fēnix 7 Pro in the SDK sample, so it is not used.)
 - **No repeats:** while the dashboard is visible the app writes `fgSeen`, and `markSeen()` counts visible conditions as already nudged.
 - **App timers:** 60 s goal refresh, vitals every 5 min, 100 ms only during 2–3 s animations, 400 ms only while the jogging animation is on screen; all stopped in `onHide`.
@@ -109,16 +113,41 @@ Box breathing 4-4-4-4 × 4 rounds (~64 s). The ring and the monkey's chest follo
 
 ## Pixel art
 
-`MonkeyArt` holds sprites as strings (`K` outline, `B` fur, `T` tan, `Y`/`G` banana …): one shared body plus small patches per pose (relax, perk, eat, tired, asleep, alert, stressed, jog ×2, stretch, breathe). `PixelSprite.compile()` packs horizontal runs into one `Number` each. **Compile the body once and poses lazily** — compiling all poses in one `onLayout` trips the watchdog ("Code Executed Too Long").
+`MonkeyArt` holds sprites as strings (`K` outline, `B` fur, `T` tan, `Y`/`G` banana, `C` ice …): one shared body plus small patches per pose (relax, perk, eat, tired, asleep, alert, stressed, jog ×2, stretch, breathe, pant, cold, hot, climb, bored). `PixelSprite.compile()` packs horizontal runs into one `Number` each. **Compile the body once and poses lazily** — compiling all poses in one `onLayout` trips the watchdog ("Code Executed Too Long").
 
-## Expansion vitals (not built)
+### Breath (Pulse Ox, read-only)
 
-| Vital | fēnix 7 Pro data | Feasible? | Notes |
+| State | Trigger | Monkey | Recommendation | Recovers when |
+|---|---|---|---|---|
+| Normal | latest awake reading ≥ 95 % or no data | goal pose | — | — |
+| Low | one reading 90–94 % | panting, sweat drop | "START: slow breaths" | next reading ≥ 95 % |
+| Concerning | < 90 %, or low on 2+ readings in a row | panting, teal tint | "Lasts? Ask someone" + background reminder | a later reading ≥ 95 % |
+
+Readings come from `SensorHistory.getOxygenSaturationHistory` (only exists if the user enabled Pulse Ox), awake hours only (SpO2 is normally lower asleep). Apps cannot start a measurement, so the spec's "recheck in 2 min" is the next stored reading. Copy never diagnoses: "Sit down and take slow breaths; if it continues, check in with someone."
+
+### Warmth (watch temperature)
+
+| State | Trigger | Monkey | Recommendation |
 |---|---|---|---|
-| **Breath** (Pulse Ox) | `SensorHistory.getOxygenSaturationHistory` (only when the user enabled Pulse Ox) | Read-only yes | Apps cannot trigger a measurement, so "recheck in 2 min" is not possible; use the next stored reading. Copy must stay non-diagnostic ("take a few slow breaths; if it stays low, check in with someone"). |
-| **Warmth** (temperature) | `SensorHistory.getTemperatureHistory` | Partly | The sensor sits on the wrist: body heat skews ambient readings unless the watch is off-wrist. Indoor/outdoor inference needs GPS (battery-heavy) — not recommended for a background check. |
-| **Curiosity** (GPS + barometer + compass) | `Position`, `SensorHistory.getElevationHistory`, `ActivityMonitor.Info.floorsClimbed` | Partly | Route novelty needs GPS tracks; the app cannot read other activities' tracks. Cheap version: new elevation/floors milestones and weekly distance as "new territory" rewards. |
-| **Sleep** | none | No (on-watch) | Garmin cloud Health API only (server + partner approval). Body Battery recharge is the proxy. |
+| OK | default | goal pose | — |
+| Cold | every reading of the last 15 min < 10 °C | shivering, snowflakes, ice-blue tint | "Head somewhere warm" |
+| Hot | reading ≥ 35 °C and HR ≥ 15 % over resting without movement | fanning with a leaf, sun | "Water and shade" |
+
+The sensor is on the wrist and reads several degrees above the air, so thresholds are deliberately conservative (only real cold pulls the wrist sensor under 10 °C). No GPS indoor/outdoor inference (battery).
+
+### Curiosity (daily distance / floors, no GPS)
+
+| State | Trigger | Monkey | Reward / text |
+|---|---|---|---|
+| Content | default | goal pose | — |
+| Routine | last 3 days within ±15 % distance and ≤ 2 floors each | bored, chin on hand | "New direction today?" |
+| Adventurous | today beats the 7-day best distance (≥ 3 km) or floors (≥ 5) | plants a flag | +30 XP once per day, "New territory!" |
+
+Route novelty and compass bearings would need GPS tracks of other activities, which apps cannot read; the distance/floors version keeps the "discovery" idea at zero battery cost.
+
+### Sleep
+
+Not readable on the watch (Garmin cloud Health API only: server + partner approval). Body Battery recharge is the proxy (see Energy).
 
 ## Development safeguards
 

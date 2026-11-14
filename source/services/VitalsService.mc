@@ -15,6 +15,8 @@ module VitalsService {
     const KEY_CADENCE = "vCadence"; // [steps, epoch seconds] from the previous snapshot
     const RECENT_SEC = 3 * 3600;      // window for the rest / nap gain
     const SUSTAIN_SEC = 6 * 60;       // "sustained" = every sample in the last ~5-6 minutes
+    const SPO2_WINDOW_SEC = 4 * 3600; // Pulse Ox readings considered (awake part only)
+    const COLD_WINDOW_SEC = 15 * 60;
 
     function snapshot() as VitalsSnapshot {
         var s = new VitalsSnapshot();
@@ -30,6 +32,8 @@ module VitalsService {
         s.stepsPerMin = cadence(info.steps);
         readHeartRate(s);
         readSensorHistory(s);
+        readSpo2(s);
+        readTemperature(s);
         return s;
     }
 
@@ -138,6 +142,69 @@ module VitalsService {
             }
             s.stressSustained = count >= 2 && allHigh;
         }
+    }
+
+    // Latest awake Pulse Ox reading and how many of the newest readings in a row are low.
+    // Readings from before wake time are skipped (SpO2 is normally lower during sleep).
+    function readSpo2(s as VitalsSnapshot) as Void {
+        if (!(Toybox has :SensorHistory) || !(SensorHistory has :getOxygenSaturationHistory) || !Vitals.isAwake(s)) {
+            return;
+        }
+        var awakeSec = Vitals.minutesSinceWake(s) * 60;
+        var window = awakeSec < SPO2_WINDOW_SEC ? awakeSec : SPO2_WINDOW_SEC;
+        if (window < 60) {
+            return;
+        }
+        var it = SensorHistory.getOxygenSaturationHistory({
+            :period => new Time.Duration(window),
+            :order => SensorHistory.ORDER_NEWEST_FIRST
+        });
+        var streak = 0;
+        var counting = true;
+        var sample = it.next();
+        while (sample != null) {
+            var v = validPct(sample.data);
+            if (v != null && v > 0) {
+                if (s.spo2 == null) {
+                    s.spo2 = v;
+                }
+                if (counting && v < Vitals.SPO2_OK) {
+                    streak++;
+                } else {
+                    counting = false;
+                }
+            }
+            sample = it.next();
+        }
+        s.spo2LowStreak = streak;
+    }
+
+    function readTemperature(s as VitalsSnapshot) as Void {
+        if (!(Toybox has :SensorHistory) || !(SensorHistory has :getTemperatureHistory)) {
+            return;
+        }
+        var it = SensorHistory.getTemperatureHistory({
+            :period => new Time.Duration(COLD_WINDOW_SEC),
+            :order => SensorHistory.ORDER_NEWEST_FIRST
+        });
+        var count = 0;
+        var allCold = true;
+        var sample = it.next();
+        while (sample != null) {
+            var d = sample.data;
+            if (d != null) {
+                var t = d.toNumber();
+                if (s.tempC == null) {
+                    s.tempC = t;
+                }
+                count++;
+                if (t >= Vitals.COLD_C) {
+                    allCold = false;
+                }
+            }
+            sample = it.next();
+        }
+        s.coldSustained = count >= 2 && allCold;
     }
 
     // Steps per minute since the previous snapshot (1..35 min ago), else null.

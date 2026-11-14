@@ -3,7 +3,7 @@ import Toybox.Lang;
 // Pixel-art monkey. Every function returns patches: [x, y, rows] in sprite pixels.
 // The body silhouette is shared; each pose only adds eyes, mouth, arms, tail and banana.
 // Characters: . transparent  K outline  B fur  D dark fur  T tan  P pink
-//             W white  G green banana  Y yellow banana  R mouth
+//             W white  G green banana  Y yellow banana  R mouth  C ice blue
 module MonkeyArt {
 
     const WIDTH = 32;   // sprite bounding box incl. tail
@@ -336,6 +336,130 @@ module MonkeyArt {
             [17, 15, ["DK", "DK", "DK."]],
             [7, 17, ["KBBK", ".KK."]],
             [13, 17, ["KBBK", ".KK."]],
+            [20, 12, [
+                "....KKKK",
+                "...KBBBBK",
+                "..KBKKKBK",
+                "..KBK.KBK",
+                "..KBKKBK.",
+                "..KBK.K..",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]]
+        ];
+    }
+
+    // Breath: a bit out of breath. Worried brows, open panting mouth, sweat drop, hand on chest.
+    function pantPose() as Array {
+        return [
+            [7, 4, ["KK......KK"]],
+            [8, 6, ["KW....KW", "KK....KK"]],
+            [10, 9, ["KKKK", "KRRK", "KPPK", ".KK."]],
+            [4, 14, ["KD", "KD", "KD", ".KD"]],
+            [14, 14, ["KTTK", "KTTK", ".KK."]],
+            [17, 0, [".C", "CC", "CC"]],
+            [20, 12, [
+                "....KKKK",
+                "...KBBBBK",
+                "..KBKKKBK",
+                "..KBK.KBK",
+                "..KBKKBK.",
+                "..KBK.K..",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]]
+        ];
+    }
+
+    // Warmth: cold. Arms hugging the chest, chattering teeth, snowflakes.
+    function coldPose() as Array {
+        return [
+            [7, 6, ["K........K"]],
+            [8, 7, ["K......K"]],
+            [7, 8, ["K........K"]],
+            [9, 10, ["KWKWKW"]],
+            [5, 14, ["KDDDDDDDDDDDDK", ".KTTK....KTTK."]],
+            [20, 12, [
+                "....KKKK",
+                "...KBBBBK",
+                "..KBKKKBK",
+                "..KBK.KBK",
+                "..KBKKBK.",
+                "..KBK.K..",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]],
+            [-6, 6, ["C.C", ".C.", "C.C"]],
+            [-3, 15, ["C.C", ".C.", "C.C"]],
+            [26, 0, ["C.C", ".C.", "C.C"]]
+        ];
+    }
+
+    // Warmth: hot. Droopy eyes, pink cheeks, tongue out, fanning with a big leaf, sun.
+    function hotPose() as Array {
+        return [
+            [7, 6, ["KKK....KKK", ".K......K."]],
+            [6, 8, ["PP........PP"]],
+            [10, 10, ["KKKK", ".KPK", "..K."]],
+            [-4, 4, [".GGG.", "GGGGG", "GGGGG", ".GGG.", "..K..", "..KD", "...KD", "....KD"]],
+            [18, 14, ["DK", "DK", "DK", "DK."]],
+            [17, 1, ["C", "C"]],
+            [24, -6, ["Y.Y.Y", ".YYY.", "YYYYY", ".YYY.", "Y.Y.Y"]],
+            [20, 12, [
+                "....KKKK",
+                "...KBBBBK",
+                "..KBKKKBK",
+                "..KBK.KBK",
+                "..KBKKBK.",
+                "..KBK.K..",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]]
+        ];
+    }
+
+    // Curiosity: adventurous. Happy eyes, grin, planting a flag on new territory.
+    function climbPose() as Array {
+        return [
+            [7, 6, [".K......K.", "K.K....K.K"]],
+            [9, 10, ["KKKKKK", ".KRRK."]],
+            [4, 14, ["KD", "KD", "KD", ".KD"]],
+            [18, 6, ["KTTK", "KTTK", "KDK.", "KDK.", "KDK.", "DK..", "K..."]],
+            [19, -8, ["KRRRR", "KRRRR", "KRR..", "K....", "K....", "K....", "K....", "K....", "K...."]],
+            [20, 4, [
+                "...KKKKK.",
+                "..KBBBBBK",
+                ".KBKKKKBK",
+                ".KBK..KBK",
+                ".KBK.KBK.",
+                ".KBK..K..",
+                "..KBK....",
+                "...KBK...",
+                "...KBK...",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]],
+            [-4, 1, [".Y.", "YYY", ".Y."]]
+        ];
+    }
+
+    // Curiosity: routine. Half-lidded eyes looking aside, flat mouth, chin on hand.
+    function boredPose() as Array {
+        return [
+            [7, 6, ["KKK....KKK", "KK.....KK."]],
+            [11, 10, ["KKK"]],
+            [10, 11, ["KTTK", "KTTK", ".KDK", ".KDK", ".KDK"]],
+            [4, 14, ["KD", "KD", "KD", ".KD"]],
             [20, 12, [
                 "....KKKK",
                 "...KBBBBK",

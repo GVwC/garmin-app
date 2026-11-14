@@ -33,6 +33,7 @@ class MainView extends WatchUi.View {
     private var _snap as VitalsSnapshot = new VitalsSnapshot();
     private var _hasSnap as Boolean = false;
     private var _msg as Number = MonkeyStatus.MSG_NONE;
+    private var _curious as Number = Vitals.CURIOUS_CONTENT;
 
     // Animation state.
     private var _bounceTick as Number = -1;
@@ -69,12 +70,15 @@ class MainView extends WatchUi.View {
         _labels = strs([Rez.Strings.GoalSteps, Rez.Strings.GoalActive, Rez.Strings.GoalFloors]);
         _units = strs([Rez.Strings.UnitSteps, Rez.Strings.UnitActive, Rez.Strings.UnitFloors]);
         _titles = strs([Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
-            Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7]);
+            Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8,
+            Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13]);
         _actions = strs([Rez.Strings.Ac0, Rez.Strings.Ac1, Rez.Strings.Ac2, Rez.Strings.Ac3,
-            Rez.Strings.Ac4, Rez.Strings.Ac5, Rez.Strings.Ac6, Rez.Strings.Ac7]);
+            Rez.Strings.Ac4, Rez.Strings.Ac5, Rez.Strings.Ac6, Rez.Strings.Ac7, Rez.Strings.Ac8,
+            Rez.Strings.Ac9, Rez.Strings.Ac10, Rez.Strings.Ac11, Rez.Strings.Ac12, Rez.Strings.Ac13]);
         _demoLabels = strs([Rez.Strings.Dm0, Rez.Strings.Dm1, Rez.Strings.Dm2, Rez.Strings.Dm3,
             Rez.Strings.Dm4, Rez.Strings.Dm5, Rez.Strings.Dm6, Rez.Strings.Dm7, Rez.Strings.Dm8,
-            Rez.Strings.Dm9, Rez.Strings.Dm10, Rez.Strings.Dm11]);
+            Rez.Strings.Dm9, Rez.Strings.Dm10, Rez.Strings.Dm11, Rez.Strings.Dm12, Rez.Strings.Dm13,
+            Rez.Strings.Dm14, Rez.Strings.Dm15, Rez.Strings.Dm16, Rez.Strings.Dm17]);
         _s = {
             :unavailable => str(Rez.Strings.Unavailable),
             :level => str(Rez.Strings.Level),
@@ -85,6 +89,7 @@ class MainView extends WatchUi.View {
             :revived => str(Rez.Strings.Revived),
             :calmed => str(Rez.Strings.Calmed),
             :breathed => str(Rez.Strings.Breathed),
+            :explored => str(Rez.Strings.Explored),
             :hintLive => str(Rez.Strings.HintLive),
             :hintMenu => str(Rez.Strings.HintMenu),
             :hintDemo => str(Rez.Strings.HintDemo),
@@ -122,6 +127,16 @@ class MainView extends WatchUi.View {
             return MonkeyArt.stretchPose();
         } else if (pose == MonkeyStatus.POSE_BREATHE) {
             return MonkeyArt.breathePose();
+        } else if (pose == MonkeyStatus.POSE_PANT) {
+            return MonkeyArt.pantPose();
+        } else if (pose == MonkeyStatus.POSE_COLD) {
+            return MonkeyArt.coldPose();
+        } else if (pose == MonkeyStatus.POSE_HOT) {
+            return MonkeyArt.hotPose();
+        } else if (pose == MonkeyStatus.POSE_CLIMB) {
+            return MonkeyArt.climbPose();
+        } else if (pose == MonkeyStatus.POSE_BORED) {
+            return MonkeyArt.boredPose();
         }
         return MonkeyArt.relaxPose();
     }
@@ -201,6 +216,10 @@ class MainView extends WatchUi.View {
         } else if (event == VitalsModel.EVENT_CALMED) {
             showBanner(text(:calmed), 0x55FFFF);
         }
+        _curious = ActivityHistory.curiosity();
+        if (_curious == Vitals.CURIOUS_ADVENTUROUS) {
+            _model.addExploreBonus(); // once per day; the event shows the banner
+        }
         var now = Time.now().value();
         _vitals.markSeen(snap, _model.getProgressPermille(), now);
         Storage.setValue(VitalsModel.KEY_FG_SEEN, now);
@@ -239,9 +258,11 @@ class MainView extends WatchUi.View {
     private function updateStatus() as Void {
         if (_model.isDemo()) {
             var row = demoRow();
-            _msg = MonkeyStatus.message(row[DemoScenarios.ENERGY], row[DemoScenarios.CALM], row[DemoScenarios.DEEP] == 1);
+            _msg = MonkeyStatus.message(row[DemoScenarios.ENERGY], row[DemoScenarios.CALM], row[DemoScenarios.DEEP] == 1,
+                row[DemoScenarios.BREATH], row[DemoScenarios.WARMTH], row[DemoScenarios.CURIOUS]);
         } else {
-            _msg = MonkeyStatus.message(_vitals.getEnergy(), _vitals.getCalm(), Vitals.isDeepInactive(_snap));
+            _msg = MonkeyStatus.message(_vitals.getEnergy(), _vitals.getCalm(), Vitals.isDeepInactive(_snap),
+                _vitals.getBreath(), _vitals.getWarmth(), _curious);
         }
     }
 
@@ -286,6 +307,9 @@ class MainView extends WatchUi.View {
         } else if (kind == MonkeyModel.EV_BREATH) {
             label = text(:breathed);
             color = 0x55FFFF;
+        } else if (kind == MonkeyModel.EV_EXPLORE) {
+            label = text(:explored);
+            color = 0x55FF55;
         }
         if (e[2]) {
             showBanner(text(:levelUp), 0x55FFFF);
@@ -313,7 +337,7 @@ class MainView extends WatchUi.View {
         if (isAnimating()) {
             return ANIM_MS;
         }
-        return (_msg == MonkeyStatus.MSG_EXERCISING) ? JOG_MS : REFRESH_MS;
+        return MonkeyStatus.isLooping(_msg) ? JOG_MS : REFRESH_MS;
     }
 
     private function schedule() as Void {
@@ -355,8 +379,7 @@ class MainView extends WatchUi.View {
     function onUpdate(dc as Dc) as Void {
         var cx = dc.getWidth() / 2;
         var center = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-        var tint = MonkeyStatus.tint(_msg);
-        var bg = [0x005500, 0x000055, 0x550000, 0x000000][tint];
+        var bg = MonkeyStatus.tintColor(MonkeyStatus.tint(_msg));
         dc.setColor(Graphics.COLOR_WHITE, bg);
         dc.clear();
 
@@ -375,6 +398,7 @@ class MainView extends WatchUi.View {
     private function drawMonkey(dc as Dc, cx as Number) as Void {
         var pose;
         var dy = 0;
+        var dx = 0;
         if (_bounceTick >= 0) {
             pose = MonkeyStatus.POSE_EAT;
             dy = _bounce[_bounceTick] * SCALE / 2;
@@ -386,8 +410,11 @@ class MainView extends WatchUi.View {
             if (pose == MonkeyStatus.POSE_JOG2) {
                 dy = -4;
             }
+            if (pose == MonkeyStatus.POSE_COLD) {
+                dx = (_frame % 2 == 0) ? -2 : 2; // shiver
+            }
         }
-        drawSprite(dc, pose, cx - MonkeyArt.CENTER_X * SCALE, MONKEY_Y + dy, SCALE);
+        drawSprite(dc, pose, cx - MonkeyArt.CENTER_X * SCALE + dx, MONKEY_Y + dy, SCALE);
     }
 
     // "Lv 3   240 XP" with a chunky XP bar, or the event banner for a few seconds.
@@ -486,7 +513,8 @@ class MainView extends WatchUi.View {
         var line2 = "";
         if (_msg != MonkeyStatus.MSG_NONE) {
             line1 = _titles[_msg];
-            color1 = (_msg == MonkeyStatus.MSG_EXERCISING) ? 0x55FF55 : 0xFFAA00;
+            var good = _msg == MonkeyStatus.MSG_EXERCISING || _msg == MonkeyStatus.MSG_ADVENTUROUS;
+            color1 = good ? 0x55FF55 : 0xFFAA00;
             line2 = _actions[_msg];
         } else {
             line1 = text(:hintLive);

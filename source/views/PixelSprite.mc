@@ -18,7 +18,8 @@ module PixelSprite {
             0xFFFFFF, // W white
             0x55AA00, // G green banana
             0xFFFF00, // Y yellow banana
-            0xAA0000  // R mouth
+            0xAA0000, // R mouth
+            0x55AAFF  // C ice blue
         ];
     }
 
@@ -63,7 +64,7 @@ module PixelSprite {
 
     // Char -> palette index; '.' (transparent) is absent.
     function indexes() as Dictionary<Char, Number> {
-        return {'K' => 0, 'B' => 1, 'D' => 2, 'T' => 3, 'P' => 4, 'W' => 5, 'G' => 6, 'Y' => 7, 'R' => 8};
+        return {'K' => 0, 'B' => 1, 'D' => 2, 'T' => 3, 'P' => 4, 'W' => 5, 'G' => 6, 'Y' => 7, 'R' => 8, 'C' => 9};
     }
 
     function draw(dc as Dc, runs as Array<Number>, colors as Array<Number>, ox as Number, oy as Number, scale as Number) as Void {

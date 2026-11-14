@@ -34,9 +34,11 @@ class MonkeyGlance extends WatchUi.GlanceView {
         var msg = currentMsg();
         if (msg != MonkeyStatus.MSG_NONE) {
             var ids = [Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
-                Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7];
+                Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8,
+                Rez.Strings.St9, Rez.Strings.St10, Rez.Strings.St11, Rez.Strings.St12, Rez.Strings.St13];
             line = load(ids[msg]);
-            dc.setColor((msg == MonkeyStatus.MSG_EXERCISING) ? 0x55FF55 : 0xFFAA00, Graphics.COLOR_TRANSPARENT);
+            var good = msg == MonkeyStatus.MSG_EXERCISING || msg == MonkeyStatus.MSG_ADVENTUROUS;
+            dc.setColor(good ? 0x55FF55 : 0xFFAA00, Graphics.COLOR_TRANSPARENT);
         } else if (value == null) {
             line = load(Rez.Strings.Unavailable);
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -71,7 +73,9 @@ class MonkeyGlance extends WatchUi.GlanceView {
                 || !(energy instanceof Number) || !(calm instanceof Number)) {
             return MonkeyStatus.MSG_NONE;
         }
-        return MonkeyStatus.message(energy, calm, false);
+        var breath = (st.size() >= 8 && st[6] instanceof Number) ? st[6] as Number : Vitals.BREATH_NORMAL;
+        var warmth = (st.size() >= 8 && st[7] instanceof Number) ? st[7] as Number : Vitals.WARMTH_OK;
+        return MonkeyStatus.message(energy, calm, false, breath, warmth, Vitals.CURIOUS_CONTENT);
     }
 
     private static function load(id as ResourceId) as String {
