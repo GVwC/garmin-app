@@ -1,5 +1,29 @@
 <strings>
-    <string id="AppName">Climb Clock</string>
-    <string id="ModeLive">START: demo</string>
-    <string id="ModeDemo">DEMO  START: live</string>
+    <string id="AppName">Monkey Miles</string>
+
+    <string id="GoalSteps">Steps</string>
+    <string id="GoalActive">Active minutes</string>
+    <string id="GoalFloors">Floors</string>
+    <string id="UnitSteps">steps</string>
+    <string id="UnitActive">min</string>
+    <string id="UnitFloors">floors</string>
+    <string id="Unavailable">unavailable</string>
+
+    <string id="Level">Lv</string>
+    <string id="Xp">XP</string>
+    <string id="LevelUp">LEVEL UP!</string>
+    <string id="GoalHit">Banana!</string>
+    <string id="GoalMissed">Missed</string>
+
+    <string id="HintLive">START: goal</string>
+    <string id="HintMenu">Hold UP: menu</string>
+    <string id="HintDemo">DOWN next  BACK exit</string>
+    <string id="Demo">DEMO</string>
+    <string id="DemoMissed">missed day</string>
+
+    <string id="MenuTitle">Monkey Miles</string>
+    <string id="MenuGoal">Goal</string>
+    <string id="MenuDemo">Demo mode</string>
+    <string id="PickGoal">Feed me with</string>
+    <string id="PickTarget">Daily target</string>
 </strings>

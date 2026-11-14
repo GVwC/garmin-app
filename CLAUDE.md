@@ -4,7 +4,7 @@
 
 ## Snapshot
 
-- Garmin Connect IQ **watch-app** in Monkey C, starter/baseline for future apps.
+- Garmin Connect IQ **watch-app** in Monkey C: **Monkey Miles** (pixel monkey fed by a daily activity goal, XP + levels). The old climbing-clock example lives on branch `demo/climbing-clock`.
 - Target device: `fenix7pro` (fēnix 7 Pro, 260×260 round MIP, 8 bpp, touch + 5 buttons), API 5.2.0, SDK 9.1.0 (active SDK read from `%APPDATA%\Garmin\ConnectIQ\current-sdk.cfg`).
 - OS: Windows 11 (PowerShell tool, `scripts\ciq.ps1`) or macOS (Bash, `./scripts/ciq.sh`). Same tasks; examples below use the Windows form.
 - macOS: SDK config lives in `~/Library/Application Support/Garmin/ConnectIQ/`; Java is Homebrew `openjdk@17` (keg-only — `ciq.sh` finds it, no PATH change needed).
@@ -14,11 +14,12 @@
 ```
 manifest.xml          app id, type, products, permissions (edit via "Monkey C: Edit ..." commands)
 monkey.jungle         build config; sourcePath = source;tests
-source/StarterApp.mc  AppBase entry; owns ClimbModel
-source/views/         WatchUi.View subclasses (drawing only)
+source/StarterApp.mc  AppBase entry; owns MonkeyModel
+source/views/         MainView, Menus, MonkeyArt (pixel sprites), PixelSprite (drawing only)
 source/delegates/     input handling (BehaviorDelegate)
-source/model/         plain state/logic, unit-testable
-source/utils/Log.mc   Log.debug() — (:debug) only
+source/model/         MonkeyModel: goal, XP, reward, demo (unit-testable)
+source/services/      ActivityService: ActivityMonitor reads
+source/utils/          Log.debug() ((:debug) only), DayClock, Fmt
 resources/            strings, drawables (launcher icon 40×40)
 tests/                (:test) functions, built only with --unit-test
 scripts/ciq.ps1       build | test | run | sim | package | clean  (Windows)

@@ -19,12 +19,12 @@ Commands below use the Windows script; on macOS/Linux replace `.\scripts\ciq.ps1
 
 On the simulated watch, click the physical buttons on the image or the screen:
 
-| Watch input | Behaviour (BehaviorDelegate) | Starter action |
+| Watch input | Behaviour (BehaviorDelegate) | Monkey Miles action |
 |---|---|---|
-| START (top right) / tap screen | `onSelect` | count +1 |
-| BACK (bottom right) / swipe right | `onBack` | exit app |
-| UP / DOWN (left) / swipe | `onPreviousPage` / `onNextPage` | unused |
-| Hold UP | `onMenu` | unused |
+| START (top right) / tap screen | `onSelect` | goal picker |
+| BACK (bottom right) / swipe right | `onBack` | leave demo, else exit app |
+| UP / DOWN (left) / swipe | `onPreviousPage` / `onNextPage` | DOWN: next demo stage |
+| Hold UP | `onMenu` | menu: goal, demo mode |
 
 ## Debugging
 

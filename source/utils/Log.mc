@@ -9,7 +9,7 @@ module Log {
 
     (:debug)
     function debug(msg as String) as Void {
-        System.println("[Starter] " + msg);
+        System.println("[Monkey] " + msg);
     }
 
     (:release)
