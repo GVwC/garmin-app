@@ -1,6 +1,6 @@
 # AGENTS.md — rules for AI coding assistants
 
-This is a Garmin Connect IQ project in Monkey C. Target: **fēnix 7 Pro** (product id `fenix7pro`), Connect IQ API **5.2.0**, SDK **9.1.0**, Windows.
+This is a Garmin Connect IQ project in Monkey C. Target: **fēnix 7 Pro** (product id `fenix7pro`), Connect IQ API **5.2.0**, SDK **9.1.0**, Windows or macOS.
 Read [docs/API_COMPATIBILITY.md](docs/API_COMPATIBILITY.md) for device facts and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for code layout.
 
 ## Rules
@@ -21,15 +21,17 @@ Read [docs/API_COMPATIBILITY.md](docs/API_COMPATIBILITY.md) for device facts and
 14. **Prefer small, testable changes.** Put testable logic in plain classes and add a `(:test)` function in `tests/` for it.
 15. **Update docs when architecture changes** (ARCHITECTURE.md, this file's paths, CLAUDE.md commands).
 
-## Commands (PowerShell, from repo root)
+## Commands (from repo root)
 
-| Task | Command |
-|---|---|
-| Compile (debug, fenix7pro) | `.\scripts\ciq.ps1 build` |
-| Unit tests in simulator | `.\scripts\ciq.ps1 test` |
-| Build + launch in simulator | `.\scripts\ciq.ps1 run` |
-| Start simulator only | `.\scripts\ciq.ps1 sim` |
-| Clean | `.\scripts\ciq.ps1 clean` |
+Windows uses PowerShell `.\scripts\ciq.ps1 <task>`; macOS/Linux use bash `./scripts/ciq.sh <task>`. Same tasks, same flags. Rules above that say `ciq.ps1` mean whichever script fits your OS.
+
+| Task | Windows | macOS / Linux |
+|---|---|---|
+| Compile (debug, fenix7pro) | `.\scripts\ciq.ps1 build` | `./scripts/ciq.sh build` |
+| Unit tests in simulator | `.\scripts\ciq.ps1 test` | `./scripts/ciq.sh test` |
+| Build + launch in simulator | `.\scripts\ciq.ps1 run` | `./scripts/ciq.sh run` |
+| Start simulator only | `.\scripts\ciq.ps1 sim` | `./scripts/ciq.sh sim` |
+| Clean | `.\scripts\ciq.ps1 clean` | `./scripts/ciq.sh clean` |
 
 VS Code equivalents: F5 (Run App / Run Tests in `.vscode/launch.json`), command palette "Monkey C: Build Current Project".
 

@@ -1,5 +1,7 @@
 # Development workflow
 
+Commands below use the Windows script; on macOS/Linux replace `.\scripts\ciq.ps1` with `./scripts/ciq.sh` (same tasks).
+
 ## Build
 
 - VS Code: command palette → **Monkey C: Build Current Project** (output in `bin/`). Errors and warnings appear in the Problems panel.

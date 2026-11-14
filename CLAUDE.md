@@ -6,7 +6,8 @@
 
 - Garmin Connect IQ **watch-app** in Monkey C, starter/baseline for future apps.
 - Target device: `fenix7pro` (fēnix 7 Pro, 260×260 round MIP, 8 bpp, touch + 5 buttons), API 5.2.0, SDK 9.1.0 (active SDK read from `%APPDATA%\Garmin\ConnectIQ\current-sdk.cfg`).
-- OS: Windows 11. Use the PowerShell tool for `scripts\ciq.ps1`.
+- OS: Windows 11 (PowerShell tool, `scripts\ciq.ps1`) or macOS (Bash, `./scripts/ciq.sh`). Same tasks; examples below use the Windows form.
+- macOS: SDK config lives in `~/Library/Application Support/Garmin/ConnectIQ/`; Java is Homebrew `openjdk@17` (keg-only — `ciq.sh` finds it, no PATH change needed).
 
 ## Layout
 
@@ -20,7 +21,8 @@ source/model/         plain state/logic, unit-testable
 source/utils/Log.mc   Log.debug() — (:debug) only
 resources/            strings, drawables (launcher icon 40×40)
 tests/                (:test) functions, built only with --unit-test
-scripts/ciq.ps1       build | test | run | sim | package | clean
+scripts/ciq.ps1       build | test | run | sim | package | clean  (Windows)
+scripts/ciq.sh        same tasks (macOS / Linux)
 docs/                 SETUP, ARCHITECTURE, DEVELOPMENT, API_COMPATIBILITY, NEW_APP_CHECKLIST
 ```
 
@@ -38,4 +40,4 @@ docs/                 SETUP, ARCHITECTURE, DEVELOPMENT, API_COMPATIBILITY, NEW_A
 - `ciq.ps1 run` keeps streaming simulator output until the app exits; run it in the background if you need to keep working.
 - The simulator can't verify real battery drain, sensor accuracy, GPS, or exact on-device memory/performance — say so.
 - Simulator UI (button clicks) can't be scripted reliably; button logic is covered by testing model methods plus manual simulator checks.
-- Never read or print the developer key; `ciq.ps1` resolves it from `$env:CIQ_DEVELOPER_KEY` or VS Code user settings.
+- Never read or print the developer key; `ciq.ps1`/`ciq.sh` resolve it from `CIQ_DEVELOPER_KEY` or VS Code user settings.
