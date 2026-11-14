@@ -40,3 +40,9 @@ VS Code equivalents: F5 (Run App / Run Tests in `.vscode/launch.json`), command 
 - Logging: `Log.debug("...")` (stripped from release builds). No `System.println` elsewhere.
 - Redraw only via `WatchUi.requestUpdate()` after a state change; never on a tight timer.
 - User-facing text lives in `resources/strings/strings.xml`.
+
+## Git
+
+- Commit messages: **one line, [Conventional Commits](https://www.conventionalcommits.org/)** — `type(scope): summary`, e.g. `feat(view): show heart rate on main screen`.
+- No body, no trailers: no `Co-Authored-By`, no "Generated with …", no AI attribution in commits or PR descriptions.
+- Small commits on short-lived branches (`feat/<thing>`), merge to `main` often; `main` must always build.

@@ -27,3 +27,6 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
+
+# Claude Code personal overrides
+.claude/settings.local.json
