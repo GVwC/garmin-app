@@ -26,6 +26,21 @@ module StoryDraw {
     }
 }
 
+// Reminder message: wrapped into at most 3 lines of 196 px (the box between the monkey and
+// the buttons, centred at y=154). fitTextToArea needs more than the nominal font height per
+// line, so the box is sized for 3 lines plus leading.
+module ReminderText {
+
+    const WIDTH = 196;
+    const LINES = 3;
+
+    function fit(text as String) as String {
+        var h = Graphics.getFontHeight(Graphics.FONT_XTINY) * (LINES + 1);
+        var fitted = Graphics.fitTextToArea(text, Graphics.FONT_XTINY, WIDTH, h, true);
+        return (fitted != null) ? fitted : text;
+    }
+}
+
 // Common bits: compile once per view, draw a pose with fur colours.
 class StorySprite {
 
@@ -129,21 +144,22 @@ class ReminderView extends WatchUi.View {
 
         var name = Menus.nameLabel(_model.getName());
         dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 34, Graphics.FONT_SMALL, name, center);
-        dc.drawText(cx, 56, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.NeedsYou) as String, center);
+        dc.drawText(cx, 32, Graphics.FONT_SMALL, name, center);
+        dc.drawText(cx, 54, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.NeedsYou) as String, center);
 
         var shake = (_tick < 20) ? ((_tick % 2 == 0) ? -4 : 4) : ((_tick % 10 < 5) ? 0 : -3);
         var sprite = _sprite;
         if (sprite != null) {
-            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 3 + shake, 68, 3);
+            // Smaller monkey (x2) leaves room for a 3-line message.
+            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 2 + shake, 70, 2);
         }
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 168, Graphics.FONT_XTINY, Graphics.fitTextToArea(_message, Graphics.FONT_XTINY, 196, 40, true), center);
+        dc.drawText(cx, 154, Graphics.FONT_XTINY, ReminderText.fit(_message), center);
         dc.setColor(0xFFFF55, Graphics.COLOR_TRANSPARENT);
         var hint = offersBreathing() ? Rez.Strings.ReminderBreathe : Rez.Strings.ReminderGo;
-        dc.drawText(cx, 208, Graphics.FONT_XTINY, WatchUi.loadResource(hint) as String, center);
+        dc.drawText(cx, 202, Graphics.FONT_XTINY, WatchUi.loadResource(hint) as String, center);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 230, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.ReminderLater) as String, center);
+        dc.drawText(cx, 223, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.ReminderLater) as String, center);
     }
 }
 

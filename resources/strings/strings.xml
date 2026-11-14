@@ -44,14 +44,14 @@
     <string id="Ac14">Enjoy the view!</string>
 
     <!-- Background reminders, index = VitalsModel.NUDGE_* -->
-    <string id="Nudge0" scope="background">Running on empty. Walk 5 min now and go to bed early tonight.</string>
-    <string id="Nudge1" scope="background">Your monkey is stressed. Open it for a 1-minute breather.</string>
-    <string id="Nudge2" scope="background">Still for 90 min. A 5-minute walk wakes your monkey up.</string>
-    <string id="Nudge3" scope="background">Low morning recharge: your Body Battery is low. Ease into today and wind down early tonight.</string>
-    <string id="Nudge4" scope="background">Your monkey is hungry: under half your goal so far.</string>
-    <string id="Nudge5" scope="background">Your Pulse Ox readings have been low for a bit. Sit down and take slow breaths; if it continues, check in with someone.</string>
-    <string id="Nudge6" scope="background">Getting cold out there. Head somewhere warm.</string>
-    <string id="Nudge7" scope="background">Hot out there. Grab some water and shade.</string>
+    <string id="Nudge0" scope="background">Low energy and 90 min of sitting. Walk 5 minutes now, then rest early tonight.</string>
+    <string id="Nudge1" scope="background">Your heart rate is up while you sit still. Take a short breather with your monkey.</string>
+    <string id="Nudge2" scope="background">You have been sitting for 90 minutes. Stand up and walk for 5 minutes to reset.</string>
+    <string id="Nudge3" scope="background">Your Body Battery recharged poorly overnight. Take it easy today and wind down early.</string>
+    <string id="Nudge4" scope="background">Past midday and under half your goal. A short walk now gets you back on track.</string>
+    <string id="Nudge5" scope="background">Pulse Ox read low twice. Sit and breathe slowly. If it lasts, tell someone.</string>
+    <string id="Nudge6" scope="background">It has been cold for 15 minutes. Head somewhere warm and add a layer.</string>
+    <string id="Nudge7" scope="background">It is hot and your heart rate is up. Drink some water and find some shade.</string>
 
     <string id="GoalSteps">Steps</string>
     <string id="GoalActive">Active minutes</string>
@@ -149,7 +149,7 @@
     <string id="BodyBattery">Body Battery</string>
     <string id="NeedsYou">needs you!</string>
     <string id="ReminderBreathe">START: breathe now</string>
-    <string id="ReminderGo">START: on it!</string>
+    <string id="ReminderGo">START: OK, on it</string>
     <string id="ReminderLater">BACK: later</string>
     <string id="RecapTitle">Day recap</string>
     <string id="RecapOfGoal">of goal</string>

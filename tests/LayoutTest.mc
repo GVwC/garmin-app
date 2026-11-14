@@ -56,6 +56,19 @@ class LayoutChecker {
     }
 }
 
+function splitLines(text as String) as Array<String> {
+    var out = [] as Array<String>;
+    var rest = text;
+    var nl = rest.find("\n");
+    while (nl != null) {
+        out.add(rest.substring(0, nl) as String);
+        rest = rest.substring(nl + 1, null) as String;
+        nl = rest.find("\n");
+    }
+    out.add(rest);
+    return out;
+}
+
 (:test)
 function everyScreenFitsTheRoundDisplay(logger as Logger) as Boolean {
     var dc = measureDc();
@@ -108,9 +121,27 @@ function everyScreenFitsTheRoundDisplay(logger as Logger) as Boolean {
     // Reminder.
     c.check(name, Graphics.FONT_SMALL, 34, 0);
     c.check(res(Rez.Strings.NeedsYou), xt, 56, 0);
-    c.check(res(Rez.Strings.ReminderBreathe), xt, 208, 0);
-    c.check(res(Rez.Strings.ReminderGo), xt, 208, 0);
-    c.check(res(Rez.Strings.ReminderLater), xt, 230, 0);
+    c.check(res(Rez.Strings.ReminderBreathe), xt, 202, 0);
+    c.check(res(Rez.Strings.ReminderGo), xt, 202, 0);
+    c.check(res(Rez.Strings.ReminderLater), xt, 223, 0);
+    // Reminder messages: whole text in 3 lines (never truncated), each line fits its height.
+    var nudges = [Rez.Strings.Nudge0, Rez.Strings.Nudge1, Rez.Strings.Nudge2, Rez.Strings.Nudge3,
+        Rez.Strings.Nudge4, Rez.Strings.Nudge5, Rez.Strings.Nudge6, Rez.Strings.Nudge7];
+    var lh = dc.getFontHeight(xt);
+    for (var i = 0; i < nudges.size(); i++) {
+        var original = res(nudges[i]);
+        var wrapped = ReminderText.fit(original);
+        var lines = splitLines(wrapped);
+        var rejoined = "";
+        for (var j = 0; j < lines.size(); j++) {
+            rejoined += (j > 0 ? " " : "") + lines[j];
+            c.check(lines[j], xt, 154 + (j * 2 - (lines.size() - 1)) * lh / 2, 0);
+        }
+        if (lines.size() > ReminderText.LINES || !rejoined.equals(original)) {
+            c.failures++;
+            logger.error("reminder truncated: " + original + " | lines=" + lines.size() + " | [" + rejoined + "]");
+        }
+    }
 
     // Day recap.
     c.check(res(Rez.Strings.RecapTitle), Graphics.FONT_SMALL, 34, 0);
