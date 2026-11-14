@@ -8,6 +8,20 @@
 4. Tests: Run and Debug dropdown → **Run Tests (fenix 7 Pro)** → F5.
 5. Other actions: `Ctrl+Shift+P` → type `Monkey C:` (Build Current Project, Build for Device, Clean Project, Open SDK Manager, Verify Installation, Edit Products/Permissions…).
 
+### VS Code shortcuts
+
+| Shortcut | What it does |
+|---|---|
+| **F5** | Build + open simulator + run app with debugger (breakpoints work) |
+| **Ctrl+F5** | Same, without debugger |
+| **Ctrl+Shift+F5** | Restart the app after a code change |
+| **Shift+F5** | Stop |
+| **Ctrl+Shift+B** | Build only — errors/warnings appear in the Problems panel (**Ctrl+Shift+M**) |
+| `Ctrl+Shift+P` → **Tasks: Run Test Task** | Unit tests |
+| `Ctrl+Shift+P` → **Tasks: Run Task** | `CIQ: Start simulator`, `CIQ: Run in simulator (log in terminal)`, `CIQ: Clean` |
+
+App logs (`Log.debug`, `System.println`) show in the **Debug Console** (F5) or the terminal (CLI run).
+
 ## Option B: PowerShell
 
 ```powershell
