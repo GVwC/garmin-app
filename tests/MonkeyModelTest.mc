@@ -186,53 +186,57 @@ function characterDefaults(logger as Logger) as Boolean {
     Test.assertEqual(m.getFur(), 0);
     m.setCreated();
     Test.assert(m.isCreated());
-    Test.assertEqual(MainView.accessoryIndex(2), -1);
-    Test.assertEqual(MainView.accessoryIndex(3), 0);
-    Test.assertEqual(MainView.accessoryIndex(7), 1);
-    Test.assertEqual(MainView.accessoryIndex(12), 2);
+    Test.assertEqual(Growth.accessoryFor(Growth.stageFor(2, true)), -1);
+    Test.assertEqual(Growth.accessoryFor(Growth.stageFor(3, true)), 0);
+    Test.assertEqual(Growth.accessoryFor(Growth.stageFor(7, true)), 1);
+    Test.assertEqual(Growth.accessoryFor(Growth.stageFor(12, true)), 2);
     return true;
 }
 
 (:test)
-function demoCyclesWithoutTouchingLiveXp(logger as Logger) as Boolean {
+function storyRunsADayWithoutTouchingLiveXp(logger as Logger) as Boolean {
     var m = new MonkeyModel();
     m.update(200, st(5000), noHistory());
     m.takeEvent();
     m.enterDemo();
-    Test.assert(m.getValue() == 1000);
+    // Story has its own XP and starts at 07:30 with 5 % of the goal.
+    Test.assertEqual(m.getXp(), DemoScenarios.STORY_XP);
+    Test.assert(m.getValue() == 250);
     Test.assertEqual(m.getPose(), MonkeyModel.POSE_RELAX);
-    m.nextDemoStage();
-    Test.assert(m.getValue() == 3250);
-    Test.assertEqual(m.getPose(), MonkeyModel.POSE_PERK);
-    m.nextDemoStage();
-    Test.assertEqual(m.getPose(), MonkeyModel.POSE_EAT);
-    Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL);
+    m.nextDemoStage(); // 10:30 still
+    m.nextDemoStage(); // 10:40 walk
+    Test.assert(m.getValue() == 2250);
+    m.nextDemoStage(); // 10:45 revived
     var e = m.takeEvent();
-    Test.assert(e != null && e[1]);
-    m.nextDemoStage();
-    Test.assertEqual(m.getDemoStage(), 3);
-    Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL - MonkeyModel.XP_MISS);
-    // Going back never replays XP effects.
-    m.prevDemoStage();
-    Test.assertEqual(m.getDemoStage(), 2);
-    Test.assert(m.takeEvent() == null);
-    Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL - MonkeyModel.XP_MISS);
-    // Walk to the revive stage (+XP_REVIVE), then wrap around to stage 0.
-    for (var i = 3; i < DemoScenarios.COUNT; i++) {
+    Test.assert(e != null && e[3] == MonkeyModel.EV_REVIVE);
+    for (var i = 3; i < 8; i++) {
         m.nextDemoStage();
     }
-    Test.assertEqual(m.getDemoStage(), DemoScenarios.COUNT - 1);
-    var r = m.takeEvent();
-    Test.assert(r != null && r[3] == MonkeyModel.EV_REVIVE);
-    m.nextDemoStage();
+    // 18:00 goals met: celebration and level 3 -> the monkey evolves to kid.
+    Test.assertEqual(m.getPose(), MonkeyModel.POSE_EAT);
+    e = m.takeEvent();
+    Test.assert(e != null && e[1] && e[2]);
+    Test.assertEqual(m.getXp(), DemoScenarios.STORY_XP + MonkeyModel.XP_REVIVE + MonkeyModel.XP_EXPLORE + MonkeyModel.XP_GOAL);
+    Test.assertEqual(Growth.stageFor(m.getLevel(), true), Growth.STAGE_KID);
+    Test.assertEqual(m.getStreak(), DemoScenarios.STORY_STREAK + 1);
+    m.nextDemoStage(); // night
+    m.nextDemoStage(); // day 2 missed
+    var afterMiss = m.getXp();
+    Test.assertEqual(afterMiss, DemoScenarios.STORY_XP + MonkeyModel.XP_REVIVE + MonkeyModel.XP_EXPLORE + MonkeyModel.XP_GOAL - MonkeyModel.XP_MISS);
+    // Going back never replays XP effects.
+    m.prevDemoStage();
+    Test.assert(m.takeEvent() == null);
+    Test.assertEqual(m.getXp(), afterMiss);
+    // Wrap around to the first scene.
+    for (var i = 9; i < DemoScenarios.COUNT; i++) {
+        m.nextDemoStage();
+    }
     Test.assertEqual(m.getDemoStage(), 0);
-    // Live updates while in demo are ignored for rewards.
+    // Live updates while in story are ignored for rewards; leaving returns to real data.
     m.update(201, st(9000), noHistory());
     m.exitDemo();
     Test.assert(!m.isDemo());
-    // Leaving demo returns to real data: live XP was untouched, today's real goal now rewarded.
     Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL);
-    // Re-entering demo starts fresh.
     m.enterDemo();
     Test.assertEqual(m.getDemoStage(), 0);
     m.exitDemo();

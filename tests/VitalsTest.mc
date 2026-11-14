@@ -256,7 +256,7 @@ function bonusesAreCapped(logger as Logger) as Boolean {
     m.update(501, st(0), noHistory());
     Test.assert(m.addBreathBonus());
     // Demo scenario table stays consistent with the status logic.
-    var row = DemoScenarios.row(7);
+    var row = DemoScenarios.row(13);
     Test.assertEqual(MonkeyStatus.message(row[DemoScenarios.ENERGY], row[DemoScenarios.CALM], row[DemoScenarios.DEEP] == 1,
         row[DemoScenarios.BREATH], row[DemoScenarios.WARMTH], row[DemoScenarios.CURIOUS]),
         MonkeyStatus.MSG_EXHAUSTED);

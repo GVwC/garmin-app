@@ -475,6 +475,37 @@ module MonkeyArt {
         ];
     }
 
+    // Missed day: droopy brows, tear, frown, banana dropped on the ground.
+    function sadPose() as Array {
+        return [
+            [7, 5, ["..K....K.."]],
+            [7, 6, [".K......K.", "KK.....KK."]],
+            [8, 8, ["C"]],
+            [8, 9, ["C"]],
+            [9, 10, [".KKKK.", "K....K"]],
+            [4, 14, ["KD", "KD", "KD", ".KD"]],
+            [18, 14, ["DK", "DK", "DK", "DK."]],
+            [20, 12, [
+                "....KKKK",
+                "...KBBBBK",
+                "..KBKKKBK",
+                "..KBK.KBK",
+                "..KBKKBK.",
+                "..KBK.K..",
+                "..KBK....",
+                ".KBK.....",
+                "KBK......",
+                "BK......."
+            ]],
+            [-8, 19, [
+                ".K......",
+                "KGKKKKKK",
+                ".KGGGGGK",
+                "..KKKKK."
+            ]]
+        ];
+    }
+
     // ---------- level accessories (drawn on top of any pose) ----------
 
     // Level 3: a leaf sprouting on the head.

@@ -35,6 +35,7 @@ class MonkeyModel {
     static const MAX_CATCH_UP_DAYS = 7;
 
     static const FUR_COUNT = 4;
+    static const NAME_COUNT = 5;
 
     // Event kinds for the banner.
     static const EV_GOAL = 0;
@@ -50,7 +51,7 @@ class MonkeyModel {
     private static const KEY_BREATH_DAY = "breathDay";
     private static const KEY_EXPLORE_DAY = "exploreDay";
     private static const KEY_STREAK = "streak";        // [finished-day streak, bonus day]
-    private static const KEY_CHARACTER = "character";  // [created 0/1, fur]
+    private static const KEY_CHARACTER = "character";  // [created 0/1, fur, name]
 
     // Persisted (live only).
     private var _on as Array<Boolean> = [true, false, false];
@@ -65,8 +66,13 @@ class MonkeyModel {
     private var _streakBonusDay as Number = -1;
     private var _created as Boolean = false;
     private var _fur as Number = 0;
+    private var _name as Number = 0;
 
     private var _persist as Boolean = false;
+
+    // Last settled missed day, for the recap screen (not persisted).
+    private var _lostStreak as Number = 0;
+    private var _missPercent as Number = 0;
 
     // Live readings, index = goal type.
     private var _today as Number = 0;
@@ -96,6 +102,38 @@ class MonkeyModel {
     function setCreated() as Void {
         _created = true;
         save();
+    }
+
+    // Index into the name list (strings Name0..Name4).
+    function getName() as Number {
+        return _name;
+    }
+
+    function setName(name as Number) as Void {
+        _name = (name >= 0 && name < NAME_COUNT) ? name : 0;
+        save();
+    }
+
+    // Start over with a fresh egg: wipes the stored monkey (XP, goals, streak, vitals state).
+    function newGame() as Void {
+        if (_persist) {
+            Storage.clearValues();
+        }
+        _on = [true, false, false];
+        _targets = [5000, 30, 15];
+        _rewardDays = [-1, -1, -1];
+        _shown = Goals.GOAL_STEPS;
+        _xp = 0;
+        _lastEvalDay = null;
+        _breathDay = -1;
+        _exploreDay = -1;
+        _streak = 0;
+        _streakBonusDay = -1;
+        _created = false;
+        _fur = 0;
+        _name = 0;
+        _demo = false;
+        clearEvent();
     }
 
     function getFur() as Number {
@@ -224,9 +262,13 @@ class MonkeyModel {
                 } else {
                     delta -= XP_MISS;
                     allMet = false;
+                    _missPercent = (_targets[t] > 0) ? v * 100 / _targets[t] : 0;
                 }
             }
             if (!allMet) {
+                if (_streak > 0) {
+                    _lostStreak = _streak;
+                }
                 _streak = 0;
             } else if (known) {
                 _streak++;
@@ -321,11 +363,11 @@ class MonkeyModel {
         return _demo;
     }
 
-    // Demo starts fresh at stage 0 with a copy of the live XP.
+    // Story mode starts fresh at scene 0 with its own XP (never the real monkey's).
     function enterDemo() as Void {
         _demo = true;
         _demoStage = 0;
-        _demoXp = _xp;
+        _demoXp = DemoScenarios.STORY_XP;
         clearEvent();
     }
 
@@ -436,7 +478,16 @@ class MonkeyModel {
 
     // Days in a row with every goal met, counting today once it is complete.
     function getStreak() as Number {
-        return _streak + (allMetToday() ? 1 : 0);
+        var base = _demo ? DemoScenarios.STORY_STREAK : _streak;
+        return base + (allMetToday() ? 1 : 0);
+    }
+
+    function getLostStreak() as Number {
+        return _lostStreak;
+    }
+
+    function getMissPercent() as Number {
+        return _missPercent;
     }
 
     function getXp() as Number {
@@ -547,9 +598,10 @@ class MonkeyModel {
             _streakBonusDay = num(streak[1], -1);
         }
         var ch = Storage.getValue(KEY_CHARACTER);
-        if (ch instanceof Array && ch.size() == 2) {
+        if (ch instanceof Array && ch.size() >= 2) {
             _created = num(ch[0], 0) == 1;
             _fur = num(ch[1], 0);
+            _name = (ch.size() >= 3) ? num(ch[2], 0) : 0;
         } else {
             // Players from before character setup keep their monkey.
             _created = Storage.getValue(Goals.KEY_XP) != null;
@@ -570,7 +622,7 @@ class MonkeyModel {
         Storage.setValue(KEY_BREATH_DAY, _breathDay);
         Storage.setValue(KEY_EXPLORE_DAY, _exploreDay);
         Storage.setValue(KEY_STREAK, [_streak, _streakBonusDay]);
-        Storage.setValue(KEY_CHARACTER, [_created ? 1 : 0, _fur]);
+        Storage.setValue(KEY_CHARACTER, [_created ? 1 : 0, _fur, _name]);
     }
 
     private static function readNumber(key as String, fallback as Number) as Number {

@@ -10,6 +10,10 @@ module Menus {
     const MENU_REMINDERS = 103;
     const MENU_CHARACTER = 104;
     const MENU_DONE = 105;
+    const MENU_NEW_GAME = 106;
+    const MENU_JOURNEY = 109;
+    const MENU_NEW_YES = 107;
+    const MENU_NEW_NO = 108;
     const TARGET_OFF = -1;
 
     function s(id as ResourceId) as String {
@@ -46,14 +50,38 @@ module Menus {
         return s([Rez.Strings.Fur0, Rez.Strings.Fur1, Rez.Strings.Fur2, Rez.Strings.Fur3][fur]);
     }
 
+    function nameLabel(name as Number) as String {
+        return s([Rez.Strings.Name0, Rez.Strings.Name1, Rez.Strings.Name2, Rez.Strings.Name3, Rez.Strings.Name4][name]);
+    }
+
+    // Onboarding step 1: pick a name.
+    function namesMenu(model as MonkeyModel) as Menu2 {
+        var menu = new WatchUi.Menu2({:title => s(Rez.Strings.PickName)});
+        for (var n = 0; n < MonkeyModel.NAME_COUNT; n++) {
+            menu.addItem(new WatchUi.MenuItem(nameLabel(n), null, n, null));
+        }
+        menu.setFocus(model.getName());
+        return menu;
+    }
+
+    // "Start over with a new egg?" Yes / No.
+    function newGameMenu() as Menu2 {
+        var menu = new WatchUi.Menu2({:title => s(Rez.Strings.NewGameAsk)});
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.NewGameNo), null, MENU_NEW_NO, null));
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.NewGameYes), s(Rez.Strings.NewGameYesSub), MENU_NEW_YES, null));
+        return menu;
+    }
+
     function appMenu(model as MonkeyModel, vitals as VitalsModel) as Menu2 {
         var menu = new WatchUi.Menu2({:title => s(Rez.Strings.MenuTitle)});
         menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuGoals), goalsSummary(model), MENU_GOALS, null));
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuJourney), s(Rez.Strings.MenuJourneySub), MENU_JOURNEY, null));
         menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuBreathe), s(Rez.Strings.MenuBreatheSub), MENU_BREATHE, null));
         menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuCharacter), furLabel(model.getFur()), MENU_CHARACTER, null));
         menu.addItem(new WatchUi.ToggleMenuItem(s(Rez.Strings.MenuReminders), s(Rez.Strings.MenuRemindersSub),
             MENU_REMINDERS, vitals.isEnabled(), null));
         menu.addItem(new WatchUi.ToggleMenuItem(s(Rez.Strings.MenuDemo), null, MENU_DEMO, model.isDemo(), null));
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuNewGame), s(Rez.Strings.MenuNewGameSub), MENU_NEW_GAME, null));
         return menu;
     }
 

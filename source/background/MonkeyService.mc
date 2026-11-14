@@ -25,6 +25,7 @@ class MonkeyService extends System.ServiceDelegate {
         if (!appIsOpen(now)) {
             var kind = vitals.pickNudge(snap, goalPermille(), now);
             if (kind != VitalsModel.NUDGE_NONE) {
+                Storage.setValue(VitalsModel.KEY_PENDING, [kind, now]);
                 Background.requestApplicationWake(message(kind));
             }
         }

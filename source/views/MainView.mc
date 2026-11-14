@@ -47,6 +47,19 @@ class MainView extends WatchUi.View {
     private var _body as Array<Number> = [];
     private var _accessories as Array<Array<Number>?> = [null, null, null];
     private var _fur as Number = 0;
+    private var _stage as Number = -1;     // last shown growth stage (-1 = not yet known)
+    private var _evolveTicks as Number = 0;
+    private var _stageNames as Array<String> = [];
+    private var _name as String = "";
+
+    // Story mode: count-up between scenes; full-screen moments are pushed on scene entry.
+    private static const COUNT_TICKS = 15;   // 1.5 s
+    private var _lastScene as Number = -1;
+    private var _countFrom as Number = 0;
+    private var _countTicks as Number = 0;
+    private var _checkPending as Boolean = true;
+    private var _pendingTimer as Timer.Timer?;
+    private var _pendingKind as Number = -1;
     private var _poses as Array<Array<Number>?> = [];
     private var _colors as Array<Number> = [];
     private var _bounce as Array<Number> = [0, -3, -6, -8, -9, -8, -6, -3, 0, -2, -3, -2, 0];
@@ -81,7 +94,10 @@ class MainView extends WatchUi.View {
         _demoLabels = strs([Rez.Strings.Dm0, Rez.Strings.Dm1, Rez.Strings.Dm2, Rez.Strings.Dm3,
             Rez.Strings.Dm4, Rez.Strings.Dm5, Rez.Strings.Dm6, Rez.Strings.Dm7, Rez.Strings.Dm8,
             Rez.Strings.Dm9, Rez.Strings.Dm10, Rez.Strings.Dm11, Rez.Strings.Dm12, Rez.Strings.Dm13,
-            Rez.Strings.Dm14, Rez.Strings.Dm15, Rez.Strings.Dm16, Rez.Strings.Dm17]);
+            Rez.Strings.Dm14, Rez.Strings.Dm15, Rez.Strings.Dm16, Rez.Strings.Dm17, Rez.Strings.Dm18,
+            Rez.Strings.Dm19]);
+        _stageNames = strs([Rez.Strings.Stage1, Rez.Strings.Stage1, Rez.Strings.Stage2, Rez.Strings.Stage3, Rez.Strings.Stage4]);
+        _name = Menus.nameLabel(_model.getName());
         _s = {
             :unavailable => str(Rez.Strings.Unavailable),
             :level => str(Rez.Strings.Level),
@@ -93,6 +109,7 @@ class MainView extends WatchUi.View {
             :calmed => str(Rez.Strings.Calmed),
             :breathed => str(Rez.Strings.Breathed),
             :explored => str(Rez.Strings.Explored),
+            :evolved => str(Rez.Strings.Evolved),
             :hintLive => str(Rez.Strings.HintLive),
             :hintMenu => str(Rez.Strings.HintMenu),
             :hintDemo => str(Rez.Strings.HintDemo),
@@ -151,7 +168,7 @@ class MainView extends WatchUi.View {
         }
         PixelSprite.draw(dc, _body, _colors, x, y, scale);
         PixelSprite.draw(dc, poseRuns(pose), _colors, x, y, scale);
-        var acc = accessoryIndex(_model.getLevel());
+        var acc = Growth.accessoryFor(stage());
         if (acc >= 0) {
             var runs = _accessories[acc];
             if (runs == null) {
@@ -163,16 +180,18 @@ class MainView extends WatchUi.View {
         }
     }
 
-    // Evolution: leaf from level 3, headband from 6, crown from 10.
-    static function accessoryIndex(level as Number) as Number {
-        if (level >= 10) {
-            return 2;
-        } else if (level >= 6) {
-            return 1;
-        } else if (level >= 3) {
-            return 0;
+    private function stage() as Number {
+        return Growth.stageFor(_model.getLevel(), true);
+    }
+
+    // A level-up across a stage boundary plays the evolution (sparkle + stretch + banner).
+    private function checkEvolution() as Void {
+        var now = stage();
+        if (_stage >= 0 && now > _stage) {
+            _evolveTicks = STRETCH_TICKS + 10;
+            showBanner(text(:evolved) + " " + _stageNames[now] + "!", 0xFFFF55);
         }
-        return -1;
+        _stage = now;
     }
 
     private static function str(id as ResourceId) as String {
@@ -198,6 +217,15 @@ class MainView extends WatchUi.View {
         _timer = new Timer.Timer();
         refresh(true);
         schedule();
+        if (_checkPending) {
+            _checkPending = false;
+            _pendingKind = VitalsModel.takePendingNudge(Time.now().value());
+            if (_pendingKind >= 0) {
+                var t = new Timer.Timer();
+                t.start(method(:openPendingReminder), 100, false);
+                _pendingTimer = t;
+            }
+        }
     }
 
     function onHide() as Void {
@@ -206,6 +234,11 @@ class MainView extends WatchUi.View {
             timer.stop();
         }
         _timer = null;
+        var pending = _pendingTimer;
+        if (pending != null) {
+            pending.stop();
+        }
+        _pendingTimer = null;
         _bounceTick = -1;
         _stretchTicks = 0;
         _bannerTicks = 0;
@@ -220,6 +253,7 @@ class MainView extends WatchUi.View {
             refreshVitals();
         }
         pollEvent();
+        checkEvolution();
         updateStatus();
         WatchUi.requestUpdate();
     }
@@ -264,10 +298,14 @@ class MainView extends WatchUi.View {
     // Called by delegates after demo/goal/breathing changes.
     function onModelChanged() as Void {
         if (_model.isDemo()) {
+            onStoryScene();
             pollEvent();
+            checkEvolution();
             updateStatus();
             WatchUi.requestUpdate();
         } else {
+            _lastScene = -1;
+            _countTicks = 0;
             refresh(true);
         }
         schedule();
@@ -278,6 +316,63 @@ class MainView extends WatchUi.View {
     }
 
     // ---------- status ----------
+
+    // Entering a scene going forward: count steps up, show a reminder overlay, calm banner.
+    private function onStoryScene() as Void {
+        var scene = _model.getDemoStage();
+        if (scene == _lastScene) {
+            return;
+        }
+        var row = demoRow();
+        var forward = _lastScene >= 0 && scene == (_lastScene + 1) % DemoScenarios.COUNT;
+        if (forward) {
+            var prev = DemoScenarios.row(_lastScene)[DemoScenarios.PERCENT];
+            if (row[DemoScenarios.PERCENT] > prev) {
+                _countFrom = prev;
+                _countTicks = COUNT_TICKS;
+            }
+            if (row[DemoScenarios.EFFECT] == DemoScenarios.EFFECT_CALMED) {
+                showBanner(text(:calmed), 0x55FFFF);
+            }
+            var nudge = row[DemoScenarios.NUDGE];
+            var screen = row[DemoScenarios.SCREEN];
+            if (nudge >= 0) {
+                openReminder(nudge);
+            } else if (screen == DemoScenarios.SCREEN_RECAP) {
+                var recap = new RecapView(_model, -MonkeyModel.XP_MISS, DemoScenarios.STORY_STREAK + 1,
+                    row[DemoScenarios.PERCENT]);
+                WatchUi.pushView(recap, new StoryScreenDelegate(_model, self, null), WatchUi.SLIDE_UP);
+            } else if (screen == DemoScenarios.SCREEN_JOURNEY) {
+                WatchUi.pushView(new JourneyView(_model, true), new StoryScreenDelegate(_model, self, null), WatchUi.SLIDE_UP);
+            }
+        } else {
+            _countTicks = 0;
+        }
+        _lastScene = scene;
+    }
+
+    // Full-screen "Momo needs you!" with buzz.
+    function openReminder(kind as Number) as Void {
+        var reminder = new ReminderView(_model, kind);
+        WatchUi.pushView(reminder, new StoryScreenDelegate(_model, self, reminder), WatchUi.SLIDE_UP);
+    }
+
+    // The app was opened from a background reminder: show that reminder full screen.
+    function openPendingReminder() as Void {
+        _pendingTimer = null;
+        if (_pendingKind >= 0) {
+            openReminder(_pendingKind);
+            _pendingKind = -1;
+        }
+    }
+
+    // Goal percent shown right now (animated during a story count-up).
+    private function shownPercent(finalPct as Number) as Number {
+        if (_countTicks <= 0) {
+            return finalPct;
+        }
+        return _countFrom + (finalPct - _countFrom) * (COUNT_TICKS - _countTicks) / COUNT_TICKS;
+    }
 
     private function demoRow() as Array<Number> {
         return DemoScenarios.row(_model.getDemoStage());
@@ -347,6 +442,10 @@ class MainView extends WatchUi.View {
         if (e[1]) {
             _bounceTick = 0;
         }
+        if (kind == MonkeyModel.EV_MISSED && !_model.isDemo()) {
+            var recap = new RecapView(_model, xp, _model.getLostStreak(), _model.getMissPercent());
+            WatchUi.pushView(recap, new StoryScreenDelegate(_model, self, null), WatchUi.SLIDE_UP);
+        }
     }
 
     private function showBanner(t as String, color as Number) as Void {
@@ -358,7 +457,8 @@ class MainView extends WatchUi.View {
     // ---------- timer ----------
 
     private function isAnimating() as Boolean {
-        return _bounceTick >= 0 || _stretchTicks > 0 || _bannerTicks > 0;
+        return _bounceTick >= 0 || _stretchTicks > 0 || _bannerTicks > 0 || _evolveTicks > 0
+            || _countTicks > 0;
     }
 
     private function interval() as Number {
@@ -391,6 +491,12 @@ class MainView extends WatchUi.View {
         if (_stretchTicks > 0) {
             _stretchTicks--;
         }
+        if (_evolveTicks > 0) {
+            _evolveTicks--;
+        }
+        if (_countTicks > 0) {
+            _countTicks--;
+        }
         if (_bannerTicks > 0) {
             _bannerTicks--;
         }
@@ -411,7 +517,7 @@ class MainView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_WHITE, bg);
         dc.clear();
 
-        var takeover = MonkeyStatus.takesOverFace(_msg) && _bounceTick < 0 && _stretchTicks == 0;
+        var takeover = MonkeyStatus.takesOverFace(_msg) && _bounceTick < 0 && _stretchTicks == 0 && _evolveTicks == 0;
         if (takeover) {
             drawSprite(dc, MonkeyStatus.POSE_ASLEEP, cx - MonkeyArt.CENTER_X * BIG_SCALE, 76, BIG_SCALE);
         } else {
@@ -430,9 +536,9 @@ class MainView extends WatchUi.View {
         if (_bounceTick >= 0) {
             pose = MonkeyStatus.POSE_EAT;
             dy = _bounce[_bounceTick] * SCALE / 2;
-        } else if (_stretchTicks > 0) {
+        } else if (_stretchTicks > 0 || _evolveTicks > 0) {
             pose = MonkeyStatus.POSE_STRETCH;
-            dy = (_stretchTicks % 4 < 2) ? -4 : 0;
+            dy = ((_stretchTicks + _evolveTicks) % 4 < 2) ? -4 : 0;
         } else {
             pose = MonkeyStatus.pose(_model.getPose(), _msg, _frame);
             if (pose == MonkeyStatus.POSE_JOG2) {
@@ -442,17 +548,34 @@ class MainView extends WatchUi.View {
                 dx = (_frame % 2 == 0) ? -2 : 2; // shiver
             }
         }
-        drawSprite(dc, pose, cx - MonkeyArt.CENTER_X * SCALE + dx, MONKEY_Y + dy, SCALE);
+        // Babies are drawn smaller, centred on the same spot.
+        var s = Growth.scaleFor(stage());
+        var y = MONKEY_Y + (SCALE - s) * 23 / 2;
+        drawSprite(dc, pose, cx - MonkeyArt.CENTER_X * s + dx, y + dy, s);
+        if (_evolveTicks > 0 && _evolveTicks % 4 < 2) {
+            drawSparkles(dc, cx);
+        }
     }
 
-    // "Lv 3   240 XP" with a chunky XP bar, or the event banner for a few seconds.
+    private function drawSparkles(dc as Dc, cx as Number) as Void {
+        dc.setColor(0xFFFF55, Graphics.COLOR_TRANSPARENT);
+        var pts = [[-70, 80], [62, 74], [-58, 140], [70, 132], [-30, 64], [34, 150]];
+        for (var i = 0; i < pts.size(); i++) {
+            var x = cx + pts[i][0];
+            var y = pts[i][1];
+            dc.fillRectangle(x - 1, y - 4, 3, 9);
+            dc.fillRectangle(x - 4, y - 1, 9, 3);
+        }
+    }
+
+    // "Momo  Lv 3  240 XP" with a chunky XP bar, or the event banner for a few seconds.
     private function drawHeader(dc as Dc, cx as Number, center as Number) as Void {
         if (_bannerTicks > 0) {
             dc.setColor(_bannerColor, Graphics.COLOR_TRANSPARENT);
             dc.drawText(cx, 30, Graphics.FONT_XTINY, _bannerText, center);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            var t = text(:level) + " " + _model.getLevel() + "   " + Fmt.thousands(_model.getXp()) + " " + text(:xp);
+            var t = _name + "  " + text(:level) + " " + _model.getLevel() + "  " + Fmt.thousands(_model.getXp()) + " " + text(:xp);
             dc.drawText(cx, 30, Graphics.FONT_XTINY, t, center);
         }
         drawSegments(dc, cx - 40, 44, 80, 5, 10, _model.getLevelPermille(), 0x55AAFF);
@@ -551,6 +674,12 @@ class MainView extends WatchUi.View {
     private function drawGoal(dc as Dc, cx as Number, center as Number) as Void {
         var type = _model.getGoalType();
         var v = _model.getValue();
+        var p = _model.getProgressPermille();
+        if (_model.isDemo() && _countTicks > 0) {
+            var pct = shownPercent(demoRow()[DemoScenarios.PERCENT]);
+            v = _model.getTarget() * pct / 100;
+            p = pct * 10;
+        }
         var t;
         if (v == null) {
             t = _labels[type] + " " + text(:unavailable);
@@ -559,7 +688,6 @@ class MainView extends WatchUi.View {
         }
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, 176, Graphics.FONT_TINY, t, center);
-        var p = _model.getProgressPermille();
         var color = (p >= 1000) ? 0xFFFF55 : ((p >= 500) ? Graphics.COLOR_YELLOW : 0x55AA00);
         drawSegments(dc, cx - 80, 191, 160, 9, 20, p > 1000 ? 1000 : p, color);
     }

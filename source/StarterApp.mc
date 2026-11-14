@@ -53,7 +53,7 @@ class StarterApp extends Application.AppBase {
 }
 
 // Foreground-only construction, kept outside the background-capable app class.
-// First launch shows character setup (fur -> goals); afterwards the dashboard.
+// First launch shows character setup (egg -> name -> fur -> goals -> hatch); afterwards the dashboard.
 function createDashboard() as [Views, InputDelegates] {
     var model = new MonkeyModel();
     model.load();
@@ -62,7 +62,7 @@ function createDashboard() as [Views, InputDelegates] {
     Reminders.sync(vitals.isEnabled());
     Log.debug("start goals=" + model.enabledGoals().size() + " xp=" + model.getXp() + " created=" + model.isCreated());
     if (!model.isCreated()) {
-        return [Menus.furMenu(model, true), new FurMenuDelegate(model, vitals, null)];
+        return [new WelcomeView(model.getFur()), new WelcomeDelegate(model, vitals)];
     }
     var view = new MainView(model, vitals);
     $.registerView(view);
@@ -74,6 +74,12 @@ function openDashboard(model as MonkeyModel, vitals as VitalsModel) as Void {
     var view = new MainView(model, vitals);
     $.registerView(view);
     WatchUi.switchToView(view, new MainDelegate(model, vitals, view), WatchUi.SLIDE_IMMEDIATE);
+}
+
+// "New game": back to the egg.
+function startOnboarding(model as MonkeyModel, vitals as VitalsModel) as Void {
+    vitals.load();
+    WatchUi.switchToView(new WelcomeView(model.getFur()), new WelcomeDelegate(model, vitals), WatchUi.SLIDE_IMMEDIATE);
 }
 
 function registerView(view as MainView) as Void {

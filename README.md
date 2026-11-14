@@ -7,7 +7,10 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 
 ## Features
 
-- **Create your character:** first launch asks for a fur colour (Brown, Golden, Silver, Shadow) and which goals feed the monkey; both can be changed later from the menu.
+- **Create your monkey:** first launch shows a wobbling egg → pick a name → fur colour (the egg's spots preview it) → which goals feed the monkey → the egg cracks and your baby hatches. *New game* in the menu starts over.
+- **Growth:** egg → baby → kid (leaf) → adult (headband) → king (crown) as you level up, with an evolution animation.
+- **Reminder screen:** when the background check wakes the app, a full-screen "Momo needs you!" buzzes with the right action (START: breathe / on it, BACK: later).
+- **Day recap** after a missed day (XP drains, streak flame goes out, kind wording) and a **Journey** screen (your monkey's stage next to your last 7 days of steps).
 - **Goals that give XP:** any of Steps (1k / 3k / **5k** / 10k), Active minutes (10 / 20 / 30 / 60) and Floors (5 / 10 / 15 / 25), each with its own target. Garmin's midnight-reset totals. UP/DOWN switches the goal on the counter; chips under the XP bar show which are met.
 - **XP and levels:** each goal met +100, each goal missed −50 (settled from the 7-day history even if the app wasn't opened), streak bonus +10 × days (up to ×5) when every goal is met, revived +20 (max 3/day), breathing session +10 (1/day), new territory +30 (1/day). 300 XP per level.
 - **Evolution:** the monkey earns a leaf (level 3), a headband (level 6) and a crown (level 10). A flame shows the streak.
@@ -19,7 +22,7 @@ A pixel-art monkey companion that lives on your real watch data: it eats its ban
 - **Guided breathing:** box breathing (~1 min) with an animated ring, the monkey breathing along and live heart rate.
 - **Reminders:** a background check every 30 min (no sensors, history only) with quiet hours, cooldowns and a daily cap; asks you to open the app when the monkey needs you.
 - **Glance:** status or goal progress in the widget list.
-- **DEMO mode:** 18 scripted scenarios covering every state, never saved.
+- **Story demo:** "A day with Momo", 20 scripted scenes in five chapters (see [docs/DEMO_PLAN.md](docs/DEMO_PLAN.md)), never saved.
 
 Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -28,11 +31,11 @@ Details, thresholds and the battery rationale: [docs/ARCHITECTURE.md](docs/ARCHI
 | Button | Dashboard | Demo | Breathing |
 |---|---|---|---|
 | **START** (or tap) | Goals — or **Breathe** when stressed/alert/out of breath | same | Restart when finished |
-| **Hold UP** (menu) | Goals · Breathe · Character · Reminders on/off · Demo mode | same | — |
+| **Hold UP** (menu) | Goals · Journey · Breathe · Character · Reminders on/off · Story demo · New game | same | — |
 | **UP / DOWN** | Switch the goal on the counter (2+ goals) | Previous / next scenario | — |
 | **BACK** | Exit app | Leave demo | Back to dashboard |
 
-Demo scenarios: goal 20 % → 65 % → reached (+XP, bounce) → missed day (−XP) → still 90 min → still 2 h → low recharge → exhausted → alert → stressed → exercising → breath low → breath low again → cold → hot → adventurous (+XP) → routine → revived (+XP).
+Story scenes: 07:30 short night → 10:30 still (reminder) → walk (count-up) → back on track (+XP) → 13:00 under half (reminder) → 15:10 stressed (reminder → breathe) → calm → new route (+XP) → 18:00 goals met (evolves) → night → day 2 missed (recap) → journey → extra states.
 
 ## Build and run
 

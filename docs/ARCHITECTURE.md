@@ -43,7 +43,9 @@ Data flow (app): **input → delegate → model → `MainView.onModelChanged()` 
 
 ## Character, goals and XP (MonkeyModel)
 
-First launch (`createDashboard`): character setup instead of the dashboard — fur colour (`furMenu`) → goals (`goalsMenu` with "Done") → `openDashboard()` switches to the dashboard. The same menus are reachable later (Hold UP → Character / Goals, START → Goals). Players from the single-goal version are migrated (their goal becomes the only enabled one, the character counts as created).
+First launch (`createDashboard`): onboarding instead of the dashboard — `WelcomeView` (egg) → name menu → `FurPickerView` (egg spots preview the fur) → goals (`goalsMenu` with "Done") → `HatchView` → `openDashboard()`. *New game* clears storage and returns to the egg (`startOnboarding`). Growth stages (`Growth`): egg → baby (×3 scale) → kid (leaf, Lv 3) → adult (headband, Lv 6) → king (crown, Lv 10); crossing a stage plays the evolution animation.
+
+Full-screen moments (`StoryScreens.mc`): `ReminderView` (buzz + shaking monkey; also opened when the app is launched from a background reminder via the `pendingNudge` key), `RecapView` (missed day: XP drain, streak out), `JourneyView` (story: egg → king with scripted weekly steps; live: current stage + last 7 days). Story mode (`DemoScenarios`) pushes them on scene entry. The same menus are reachable later (Hold UP → Character / Goals, START → Goals). Players from the single-goal version are migrated (their goal becomes the only enabled one, the character counts as created).
 
 Goals: Steps / Active minutes / Floors, each on/off with its own target (at least one stays on). One goal is *shown* on the counter (UP/DOWN cycles); chips under the XP bar show every enabled goal (yellow = met, outlined = shown). The pose uses all goals: eat when every goal is met, perk up at ≥ 50 % average progress.
 

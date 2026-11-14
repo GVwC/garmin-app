@@ -37,6 +37,9 @@ class VitalsModel {
 
     // Epoch seconds, refreshed by the app while the dashboard is visible, 0 when hidden.
     static const KEY_FG_SEEN = "fgSeen";
+    // [kind, epoch s] written when the background asks to open the app.
+    static const KEY_PENDING = "pendingNudge";
+    static const PENDING_MAX_AGE_SEC = 20 * 60;
 
     private static const KEY_STATE = "vState";   // [day, energy, calm, recoveredDay, revivesToday, pendingRevives, breath, warmth]
     private static const KEY_NUDGES = "vNudges"; // [lastAny, countToday, at0..at4]
@@ -188,6 +191,22 @@ class VitalsModel {
                 save();
                 return kind;
             }
+        }
+        return NUDGE_NONE;
+    }
+
+    // Returns the reminder that woke the app (if recent) and clears it; -1 if none.
+    static function takePendingNudge(now as Number) as Number {
+        var p = Storage.getValue(KEY_PENDING);
+        if (!(p instanceof Array) || p.size() != 2) {
+            return NUDGE_NONE;
+        }
+        Storage.deleteValue(KEY_PENDING);
+        var kind = p[0];
+        var at = p[1];
+        if (kind instanceof Number && at instanceof Number && now - at <= PENDING_MAX_AGE_SEC
+                && kind >= 0 && kind < NUDGE_KINDS) {
+            return kind;
         }
         return NUDGE_NONE;
     }

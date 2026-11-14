@@ -29,6 +29,10 @@ class AppMenuDelegate extends WatchUi.Menu2InputDelegate {
             _vitals.setEnabled(on);
             Reminders.sync(on);
             Log.debug("reminders=" + on);
+        } else if (id == Menus.MENU_JOURNEY) {
+            WatchUi.switchToView(new JourneyView(_model, false), new StoryScreenDelegate(_model, _view, null), WatchUi.SLIDE_LEFT);
+        } else if (id == Menus.MENU_NEW_GAME) {
+            WatchUi.switchToView(Menus.newGameMenu(), new NewGameMenuDelegate(_model), WatchUi.SLIDE_LEFT);
         } else if (id == Menus.MENU_DEMO) {
             if (_model.isDemo()) {
                 _model.exitDemo();
@@ -82,12 +86,15 @@ class GoalsMenuDelegate extends WatchUi.Menu2InputDelegate {
         _view = view;
     }
 
+    private function hatch() as Void {
+        var hatchView = new HatchView(_model);
+        WatchUi.switchToView(hatchView, new HatchDelegate(_model, _vitals, hatchView), WatchUi.SLIDE_UP);
+    }
+
     function onSelect(item as MenuItem) as Void {
         var id = item.getId() as Number;
         if (id == Menus.MENU_DONE) {
-            _model.setCreated();
-            Log.debug("character created");
-            $.openDashboard(_model, _vitals);
+            hatch();
             return;
         }
         WatchUi.pushView(Menus.targetMenu(_model, id), new TargetMenuDelegate(_model, id, item), WatchUi.SLIDE_LEFT);
@@ -96,9 +103,8 @@ class GoalsMenuDelegate extends WatchUi.Menu2InputDelegate {
     function onBack() as Void {
         var view = _view;
         if (view == null) {
-            // Setup: BACK finishes with what was picked so far.
-            _model.setCreated();
-            $.openDashboard(_model, _vitals);
+            // Setup: BACK also goes on to hatching with what was picked so far.
+            hatch();
             return;
         }
         WatchUi.popView(WatchUi.SLIDE_DOWN);

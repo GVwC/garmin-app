@@ -11,42 +11,65 @@ Goal: a 3–4 minute demo that takes judges from **creating a monkey** (egg → 
 | Successful pet-fitness apps start by **hatching**, then the pet **visibly grows** with consistency; streak milestones and cosmetics keep people coming back. ([CalPets](https://www.trendhunter.com/trends/calpets), [Streaksy](https://peerpush.net/p/streaksy-app), [Mochi](https://apps.apple.com/bb/app/id6759009775), [Tep](https://techcrunch.com/2015/08/31/tep-is-an-adorable-fitness-tracking-app-that-works-like-a-tamagotchi)) | Egg → baby → kid → adult → crowned, driven by level; hatching is the emotional hook of the setup. |
 | The simulator can drive steps live: *Simulation → Activity Monitoring → Set Steps Per Minute*; steps 0 + *Fast Forward* fills the move bar (60/75/90/105/120 min). FIT *Simulate Data* covers sensors. ([forum](https://forums.garmin.com/developer/connect-iq/f/discussion/247/movebarlevel---how-to-simulate), [forum](https://forums.garmin.com/developer/connect-iq/f/discussion/6595/move-bar-simulator), [forum](https://forums.garmin.com/developer/connect-iq/f/discussion/3794/playback-fit-file-in-simulator/28917)) | Live part: set 120 steps/min and watch the counter climb. |
 | Simulator gaps: active minutes not set, odd history `startOfDay`, no midnight reset. ([forum](https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-activeminutesday-activeminutesweek-are-not-set-in-simulator), [forum](https://forums.garmin.com/developer/connect-iq/i/bug-reports/smulator-activitymonitor-history-startofday-is-incorrect-successive-entries-are-1-second-apart)) | Stress, Pulse Ox, cold, streaks, evolution come from the scripted story, clearly labelled. Live part sticks to steps (+ move bar). |
-| Connect IQ has no sleep API; notifications aren't listed for fēnix 7 Pro; background wakes need a real watch to judge. (see ARCHITECTURE.md) | Say it honestly in the pitch: Body Battery stands in for sleep; the reminder prompt is shown as a story overlay. |
+| Connect IQ has no sleep API; notifications aren't listed for fēnix 7 Pro; background wakes need a real watch to judge. (see ARCHITECTURE.md) | Say it honestly in the pitch: Body Battery stands in for sleep; the reminder is shown as a story screen (the same screen opens on the watch after a background wake). |
 
-## 2. The demo, minute by minute
+## 2. The demo in five chapters
 
-| Time | Screen | What the presenter says / does | Real or scripted |
+Story mode (Hold UP → *Story demo*) plays a scripted day; **DOWN** = next scene, **UP** = previous, **BACK** = leave. Full-screen moments open automatically when their scene is entered.
+
+| Time | Chapter / screen | What the presenter says / does | Real or scripted |
 |---|---|---|---|
 | 0:00–0:20 | (slide) | Problem: step totals are easy to ignore; long sitting, stress, short nights. | — |
-| 0:20–0:35 | **Welcome**: wobbling egg, "Hatch your companion" | "Everyone starts with an egg." START. | Real app flow |
-| 0:35–1:05 | **Name → Fur (live preview) → Goals → Targets** | Pick *Momo*, golden fur, Steps 5,000 + Active 30 min. "You choose what feeds your monkey." | Real app flow |
-| 1:05–1:15 | **Hatching**: egg cracks, baby Momo pops out, "Momo hatched!" | Pause for the reaction. | Real app flow |
-| 1:15–2:45 | **Story mode — "A day with Momo"** (clock in the corner, DOWN = next scene, auto-play possible) | | Scripted, labelled STORY |
-| | 07:30 Low recharge (Body Battery 38) | "Short night — Momo is yawning; it suggests easing in." | |
-| | 10:30 Still 90 min → reminder overlay | "The background check noticed. A 5-min walk resets it." | |
-| | 10:40 Walk: steps count up live, Momo jogs, *I'm back! +20 XP* | | |
-| | 13:00 Midday: under half → "Momo is hungry" | | |
-| | 15:10 Stressed (HR up, not moving) → START → **breathing screen** (real, 1 round) → *Calm again* | Show the breathing screen for ~16 s. | Breathing screen is real |
-| | 18:00 Goals met: eats banana, bounce, +XP, streak flame | | |
-| | 18:01 Level up → **evolution** baby → kid | "Consistency grows your monkey." | |
-| | 22:30 Night: sleeps, quiet hours | "No reminders at night." | |
-| 2:45–3:20 | **Live mode** on simulator (or watch) | Set *Activity Monitoring → 120 steps/min*: counter climbs, bar fills, pose changes. Show the **glance** in the widget list. | Real data |
-| 3:20–3:40 | (slide) | Battery: no sensors in background, 30-min checks, history only. Next: sleep via cloud API, social. | — |
+| **0:20–1:15** | **1. Create your monkey** | | Real app flow |
+| | Welcome: wobbling egg, "Hatch your companion" | "Everyone starts with an egg." START. | |
+| | Name → Fur (UP/DOWN recolours the egg's spots) → Goals (Steps, Active min, Floors; each with a target) → Done | "You choose what feeds your monkey." | |
+| | Hatching: wobble, two cracks, baby pops out of its shell with sparkles, "Momo hatched!" | Pause for the reaction. START. | |
+| **1:15–2:00** | **2. Steps, states and reminders** (story scenes 0–4) | | Scripted, labelled STORY |
+| | 07:30 short night → yawning monkey, "Ease in, bed early" | "No sleep API on Connect IQ — Body Battery tells us the recharge was poor." | |
+| | 10:30 still 90 min → **Reminder screen**: buzz, shaking tired monkey, "Momo needs you!" | "This is what the background check sends — on the watch it wakes the app." BACK = later. | |
+| | 10:40 walk → steps **count up**, monkey jogs; 10:45 *I'm back! +20 XP* | | |
+| | 13:00 under half → **Reminder screen** (hungry, banana dropped) | "Half the day, under half the goal." | |
+| **2:00–2:30** | **3. Stress and breathing** (scenes 5–6) | | |
+| | 15:10 stressed → **Reminder screen** → START → **breathing screen** (ring + monkey breathe, live HR) | Let one 16-s round play. BACK. | Breathing screen is real |
+| | 15:12 *Calm again* | "Heart rate only counts as stress when you're not moving." | |
+| | 16:30 new route +30 XP; 18:00 goals met: eats, bounces, +XP, **evolves baby → kid**; 22:30 asleep, quiet hours | | |
+| **2:30–2:50** | **4. A missed day** (scene 10) | | |
+| | **Day recap**: sad monkey, 35 % bar, XP counting down −50, streak flame goes out, "Tomorrow is a new banana" | "Missing costs a little XP — never shame, always a way back." | |
+| **2:50–3:20** | **5. Progress — the monkey and you** (scene 11) | | |
+| | **Journey**: egg → baby → kid → adult → king, one stage every 1.6 s with a buzz, next to *your* weekly steps chart rising (+100 % since week 1) | "The monkey grows because *you* grew." | |
+| 3:20–3:40 | Live mode on simulator or watch | *Simulation → Activity Monitoring → 120 steps/min*: real counter climbs. Show the glance. | Real data |
+| 3:40–4:00 | (slide) | Battery (no sensors in background, 30-min checks, history only), privacy (on-watch), next steps. | — |
 
-Backup: a recorded video of 0:20–3:20, and the watch with a pre-created monkey in case the laptop fails.
+Extra scenes after the journey (12–19) show the remaining states for Q&A: still 2 h, exhausted, alert, breath low (twice), cold, hot, routine.
 
-## 3. Product changes to build
+Backup: a recorded video of chapters 1–5, and the watch with a pre-created monkey in case the laptop fails. *New game* (menu) brings the egg back for the next run.
+
+## 3. Product changes
 
 | # | Feature | Why | Owner | Status |
 |---|---|---|---|---|
-| 1 | **Growth stages** egg → baby (Lv 1–2) → kid (3–5) → adult (6–9) → crowned (10+) | Visible progress; hooks the teammate's art | dev | building |
-| 2 | **Onboarding**: Welcome egg → Name → Fur with live preview → Goals → Hatch animation | Strong first minute | dev | building |
-| 3 | **Story mode** "A day with Momo": timed scenes with clock, captions, count-up steps, reminder overlay, breathing hand-off, evolution scene | Deterministic demo of every state | dev | next |
-| 4 | **New game** (menu, with confirmation) wipes the monkey so setup can be shown again | Repeatable demos | dev | next |
-| 5 | Stage art (egg, baby, kid, adult, crowned) per pose | Visual quality | teammate | open |
-| 6 | Demo runbook + backup video | Reliability | presenter | open |
+| 1 | Growth stages egg → baby (Lv 1–2, smaller) → kid (3–5, leaf) → adult (6–9, headband) → king (10+, crown) | Visible progress; hooks the teammate's art | dev | done (placeholder art) |
+| 2 | Onboarding: Welcome egg → Name → Fur preview → Goals → Hatch | Strong first minute | dev | done |
+| 3 | Story mode: scripted day + day 2 + journey, clock captions, count-up steps, evolution on level-up | Deterministic demo of every chapter | dev | done |
+| 4 | Reminder screen (buzz, shaking monkey, START = act / breathe, BACK = later); also opens when the watch launches the app from a background reminder | Chapter 2–3; real behaviour on the watch | dev | done |
+| 5 | Day recap for a missed day (XP drain, streak out, kind wording); also shown in live mode after a missed day | Chapter 4 | dev | done |
+| 6 | Journey screen: story (egg → king + rising weekly steps) and live (current stage + real last 7 days) — menu *Journey* | Chapter 5 | dev | done |
+| 7 | New game (menu, Yes/No) | Repeatable demos | dev | done |
+| 8 | Stage art per pose (egg, baby, kid, adult, king) | Visual quality | teammate | open |
+| 9 | Demo runbook rehearsal + backup video | Reliability | presenter | open |
 
-Live mode keeps working exactly as today; story mode never writes the real monkey's XP.
+Live mode keeps working exactly as before; story mode never writes the real monkey's XP.
+
+### More ideas worth adding (ranked by demo value / effort)
+
+| Idea | Why it engages | Effort |
+|---|---|---|
+| **Comeback challenge** after a missed day: tomorrow's goal pays ×2 | Turns a loss into a reason to come back (loss aversion without shame) | S |
+| **Badges** (first walk, 3-day streak, breath master, explorer) shown on the Journey screen | Collectibles; easy to show in a demo | M |
+| **Weekly recap** every Monday (best day, streak, stage progress) | Long-term engagement, the "you" story | M |
+| **Auto-play** for story mode (scene every ~6 s) | Hands-free demo while talking | S |
+| **Treats / cosmetics** bought with XP (hats, colours) | Classic pet-app retention loop | L |
+| **Friends' monkeys** via phone companion | Social motivation | L (needs phone app) |
 
 ## 4. Art contract (for the teammate)
 
