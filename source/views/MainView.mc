@@ -83,7 +83,7 @@ class MainView extends WatchUi.View {
         _poses = new Array<Array<Number>?>[MonkeyStatus.POSE_COUNT];
         _colors = PixelSprite.paletteFor(_model.getFur());
         _fur = _model.getFur();
-        _labels = strs([Rez.Strings.GoalSteps, Rez.Strings.GoalActive, Rez.Strings.GoalFloors]);
+        _labels = strs([Rez.Strings.GoalSteps, Rez.Strings.GoalActiveShort, Rez.Strings.GoalFloors]);
         _units = strs([Rez.Strings.UnitSteps, Rez.Strings.UnitActive, Rez.Strings.UnitFloors]);
         _titles = strs([Rez.Strings.St0, Rez.Strings.St1, Rez.Strings.St2, Rez.Strings.St3,
             Rez.Strings.St4, Rez.Strings.St5, Rez.Strings.St6, Rez.Strings.St7, Rez.Strings.St8,
@@ -576,13 +576,13 @@ class MainView extends WatchUi.View {
     private function drawHeader(dc as Dc, cx as Number, center as Number) as Void {
         if (_bannerTicks > 0) {
             dc.setColor(_bannerColor, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, 30, Graphics.FONT_XTINY, _bannerText, center);
+            dc.drawText(cx, 35, Graphics.FONT_XTINY, _bannerText, center);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            var t = _name + "  " + text(:level) + " " + _model.getLevel() + "  " + Fmt.thousands(_model.getXp()) + " " + text(:xp);
-            dc.drawText(cx, 30, Graphics.FONT_XTINY, t, center);
+            var t = _name + " " + text(:level) + " " + _model.getLevel() + " " + Fmt.thousands(_model.getXp()) + " " + text(:xp);
+            dc.drawText(cx, 35, Graphics.FONT_XTINY, t, center);
         }
-        drawSegments(dc, cx - 40, 44, 80, 5, 10, _model.getLevelPermille(), 0x55AAFF);
+        drawSegments(dc, cx - 40, 49, 80, 5, 10, _model.getLevelPermille(), 0x55AAFF);
         drawStreak(dc, cx);
         drawGoalChips(dc, cx);
     }
@@ -594,7 +594,7 @@ class MainView extends WatchUi.View {
             return;
         }
         var x = cx + 46;
-        var y = 38;
+        var y = 46;
         dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
         dc.fillRectangle(x + 2, y, 2, 2);
         dc.fillRectangle(x + 1, y + 2, 4, 2);
@@ -606,24 +606,24 @@ class MainView extends WatchUi.View {
             Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
-    // One chip per enabled goal (yellow = met); the goal on the counter is outlined.
+    // One chip per enabled goal (yellow = met), left of the XP bar; the goal on the counter is outlined.
     private function drawGoalChips(dc as Dc, cx as Number) as Void {
         var goals = _model.enabledGoals();
         var n = goals.size();
         if (n < 2) {
             return;
         }
-        var w = 12;
-        var gap = 6;
-        var x = cx - (n * w + (n - 1) * gap) / 2;
+        var w = 8;
+        var gap = 4;
+        var x = cx - 47 - (n * w + (n - 1) * gap);
         for (var i = 0; i < n; i++) {
             var t = goals[i];
             if (t == _model.getGoalType()) {
                 dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-                dc.fillRectangle(x - 2, 54, w + 4, 10);
+                dc.fillRectangle(x - 1, 47, w + 2, 9);
             }
             dc.setColor(_model.isMet(t) ? 0xFFFF00 : 0x555555, Graphics.COLOR_TRANSPARENT);
-            dc.fillRectangle(x, 56, w, 6);
+            dc.fillRectangle(x, 48, w, 7);
             x += w + gap;
         }
     }
@@ -691,9 +691,9 @@ class MainView extends WatchUi.View {
             t = Fmt.thousands(v) + " / " + Fmt.thousands(_model.getTarget()) + " " + _units[type];
         }
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 176, Graphics.FONT_TINY, t, center);
+        dc.drawText(cx, 172, Graphics.FONT_TINY, t, center);
         var color = (p >= 1000) ? 0xFFFF55 : ((p >= 500) ? Graphics.COLOR_YELLOW : 0x55AA00);
-        drawSegments(dc, cx - 80, 191, 160, 9, 20, p > 1000 ? 1000 : p, color);
+        drawSegments(dc, cx - 80, 187, 160, 9, 20, p > 1000 ? 1000 : p, color);
     }
 
     // Pixel-style bar: `count` blocks with 2 px gaps on a black track.
@@ -736,8 +736,8 @@ class MainView extends WatchUi.View {
             }
         }
         dc.setColor(color1, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 216, Graphics.FONT_XTINY, line1, center);
+        dc.drawText(cx, 208, Graphics.FONT_XTINY, line1, center);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 236, Graphics.FONT_XTINY, line2, center);
+        dc.drawText(cx, 227, Graphics.FONT_XTINY, line2, center);
     }
 }

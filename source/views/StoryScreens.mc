@@ -11,6 +11,21 @@ import Toybox.WatchUi;
 //   JourneyView   growth egg -> king next to *your* progress (weekly steps chart)
 // Each owns a short-lived timer that stops in onHide.
 
+// Small pixel icons shared by the story screens.
+module StoryDraw {
+
+    // 10x12 flame; grey when it has gone out.
+    function flame(dc as Dc, x as Number, y as Number, out as Boolean) as Void {
+        dc.setColor(out ? 0x555555 : 0xFFAA00, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(x + 4, y, 2, 2);
+        dc.fillRectangle(x + 2, y + 2, 6, 3);
+        dc.fillRectangle(x, y + 5, 10, 5);
+        dc.fillRectangle(x + 2, y + 10, 6, 2);
+        dc.setColor(out ? 0xAAAAAA : 0xFFFF00, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(x + 4, y + 6, 2, 4);
+    }
+}
+
 // Common bits: compile once per view, draw a pose with fur colours.
 class StorySprite {
 
@@ -114,15 +129,16 @@ class ReminderView extends WatchUi.View {
 
         var name = Menus.nameLabel(_model.getName());
         dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 38, Graphics.FONT_SMALL, name + " " + (WatchUi.loadResource(Rez.Strings.NeedsYou) as String), center);
+        dc.drawText(cx, 34, Graphics.FONT_SMALL, name, center);
+        dc.drawText(cx, 56, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.NeedsYou) as String, center);
 
         var shake = (_tick < 20) ? ((_tick % 2 == 0) ? -4 : 4) : ((_tick % 10 < 5) ? 0 : -3);
         var sprite = _sprite;
         if (sprite != null) {
-            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 3 + shake, 58, 3);
+            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 3 + shake, 68, 3);
         }
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 162, Graphics.FONT_XTINY, Graphics.fitTextToArea(_message, Graphics.FONT_XTINY, 196, 46, true), center);
+        dc.drawText(cx, 168, Graphics.FONT_XTINY, Graphics.fitTextToArea(_message, Graphics.FONT_XTINY, 196, 40, true), center);
         dc.setColor(0xFFFF55, Graphics.COLOR_TRANSPARENT);
         var hint = offersBreathing() ? Rez.Strings.ReminderBreathe : Rez.Strings.ReminderGo;
         dc.drawText(cx, 208, Graphics.FONT_XTINY, WatchUi.loadResource(hint) as String, center);
@@ -192,40 +208,41 @@ class RecapView extends WatchUi.View {
         var center = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
         dc.setColor(Graphics.COLOR_WHITE, 0x000055);
         dc.clear();
-        dc.drawText(cx, 30, Graphics.FONT_SMALL, WatchUi.loadResource(Rez.Strings.RecapTitle) as String, center);
+        dc.drawText(cx, 34, Graphics.FONT_SMALL, WatchUi.loadResource(Rez.Strings.RecapTitle) as String, center);
 
         // The monkey slumps a little as the XP drains.
         var slump = (_tick < 20) ? _tick / 5 : 4;
         var sprite = _sprite;
         if (sprite != null) {
-            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 3, 48 + slump, 3);
+            sprite.draw(dc, _pose, null, cx - MonkeyArt.CENTER_X * 3, 52 + slump, 3);
         }
 
-        // Goal bar (missed).
-        var x = cx - 70;
+        // Goal bar (missed) and how far it got.
+        var x = cx - 64;
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(x - 2, 132, 144, 12);
+        dc.fillRectangle(x - 2, 128, 132, 12);
         dc.setColor(0xFF5555, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(x, 134, 140 * _percent / 100, 8);
+        dc.fillRectangle(x, 130, 128 * _percent / 100, 8);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 156, Graphics.FONT_XTINY, _percent + "% " + (WatchUi.loadResource(Rez.Strings.RecapOfGoal) as String), center);
+        dc.drawText(cx, 152, Graphics.FONT_XTINY, _percent + "% " + (WatchUi.loadResource(Rez.Strings.RecapOfGoal) as String), center);
 
         // XP counting down.
         var p = (_tick > 20) ? 20 : _tick;
         var xp = _xpBefore + (_xpAfter - _xpBefore) * p / 20;
         dc.setColor(0xFF5555, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 180, Graphics.FONT_TINY, Fmt.thousands(xp) + " XP  " + Fmt.signed(_xpAfter - _xpBefore), center);
+        dc.drawText(cx, 174, Graphics.FONT_TINY, Fmt.thousands(xp) + " XP  " + Fmt.signed(_xpAfter - _xpBefore), center);
 
-        // Streak flame going out.
+        // Streak flame going out (icon + text centred together).
         var out = _tick > 24;
-        dc.setColor(out ? 0x555555 : 0xFFAA00, Graphics.COLOR_TRANSPARENT);
-        dc.fillRectangle(cx - 52, 198, 6, 10);
-        dc.fillRectangle(cx - 50, 195, 2, 3);
+        var streak = (WatchUi.loadResource(Rez.Strings.RecapStreak) as String) + " " + _streakBefore + " > " + (out ? 0 : _streakBefore);
+        var w = dc.getTextWidthInPixels(streak, Graphics.FONT_XTINY);
+        var fx = cx - (w + 12) / 2;
+        StoryDraw.flame(dc, fx, 189, out);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx + 6, 204, Graphics.FONT_XTINY, (WatchUi.loadResource(Rez.Strings.RecapStreak) as String) + " "
-            + _streakBefore + " > " + (out ? 0 : _streakBefore), center);
+        dc.drawText(fx + 12, 196, Graphics.FONT_XTINY, streak, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+
         dc.setColor(0xFFFF55, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 228, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.RecapTomorrow) as String, center);
+        dc.drawText(cx, 215, Graphics.FONT_XTINY, WatchUi.loadResource(Rez.Strings.RecapTomorrow) as String, center);
     }
 }
 
@@ -328,53 +345,57 @@ class JourneyView extends WatchUi.View {
         var center = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
         dc.setColor(Graphics.COLOR_WHITE, 0x005500);
         dc.clear();
-        dc.drawText(cx, 28, Graphics.FONT_SMALL, WatchUi.loadResource(Rez.Strings.JourneyTitle) as String, center);
+        dc.drawText(cx, 34, Graphics.FONT_SMALL, WatchUi.loadResource(Rez.Strings.JourneyTitle) as String, center);
 
         var stage = _story ? _frame : Growth.stageFor(_model.getLevel(), true);
         var label = _story ? _labels[_frame] : (WatchUi.loadResource(Rez.Strings.Level) as String) + " " + _model.getLevel();
         dc.setColor(0xFFFF55, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 50, Graphics.FONT_XTINY, label + " - " + _stages[stage], center);
+        dc.drawText(cx, 57, Graphics.FONT_XTINY, label + " - " + _stages[stage], center);
 
+        // The monkey stands on a fixed baseline (y=146) and grows: baby x2, then x3 with accessories.
+        var baseline = 146;
         var sprite = _sprite;
         if (sprite != null) {
             if (stage == Growth.STAGE_EGG) {
-                PixelSprite.draw(dc, _egg, sprite.colors(), cx - EggArt.WIDTH * 2, 64, 4);
+                PixelSprite.draw(dc, _egg, sprite.colors(), cx - EggArt.WIDTH * 3 / 2, baseline - EggArt.HEIGHT * 3, 3);
             } else {
-                var s = Growth.scaleFor(stage);
+                var s = (stage == Growth.STAGE_BABY) ? 2 : 3;
                 var acc = Growth.accessoryFor(stage);
-                sprite.draw(dc, _relax, acc >= 0 ? _acc[acc] : null, cx - MonkeyArt.CENTER_X * s,
-                    64 + (4 - s) * 23 / 2, s);
+                sprite.draw(dc, _relax, acc >= 0 ? _acc[acc] : null, cx - MonkeyArt.CENTER_X * s, baseline - 23 * s, s);
             }
         }
 
-        // You: 7-day steps chart and average.
+        // You: 7-day steps chart (yellow = 5,000+) and the average.
         var week = _story ? storyWeek(_frame) : liveWeek();
-        var max = 1;
+        var max = 12000;
         var sum = 0;
         for (var i = 0; i < week.size(); i++) {
             max = (week[i] > max) ? week[i] : max;
             sum += week[i];
         }
-        max = (max < 10000) ? 10000 : max;
-        var bx = cx - 56;
+        var bw = 10;
+        var gap = 5;
+        var bx = cx - (week.size() * (bw + gap) - gap) / 2;
+        var top = 154;
+        var h = 24;
         for (var i = 0; i < week.size(); i++) {
-            var h = 28 * week[i] / max;
-            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-            dc.fillRectangle(bx + i * 16, 160, 12, 28);
+            var bh = h * week[i] / max;
+            dc.setColor(0x003300, Graphics.COLOR_TRANSPARENT);
+            dc.fillRectangle(bx + i * (bw + gap), top, bw, h);
             dc.setColor(week[i] >= 5000 ? 0xFFFF00 : 0x55AA00, Graphics.COLOR_TRANSPARENT);
-            dc.fillRectangle(bx + i * 16, 188 - h, 12, h);
+            dc.fillRectangle(bx + i * (bw + gap), top + h - bh, bw, bh);
         }
         var avg = week.size() > 0 ? sum / week.size() : 0;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 204, Graphics.FONT_XTINY, Fmt.thousands(avg) + " " + (WatchUi.loadResource(Rez.Strings.StepsPerDay) as String), center);
+        dc.drawText(cx, 194, Graphics.FONT_XTINY, Fmt.thousands(avg) + " " + (WatchUi.loadResource(Rez.Strings.StepsPerDay) as String), center);
         if (_story && _frame >= 2) {
             var first = 4057; // average of week 1
             dc.setColor(0x55FF55, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, 226, Graphics.FONT_XTINY, "+" + ((avg - first) * 100 / first) + "% " +
+            dc.drawText(cx, 215, Graphics.FONT_XTINY, "+" + ((avg - first) * 100 / first) + "% " +
                 (WatchUi.loadResource(Rez.Strings.SinceDay1) as String), center);
         } else if (!_story) {
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, 226, Graphics.FONT_XTINY, (WatchUi.loadResource(Rez.Strings.RecapStreak) as String) + " " + _model.getStreak(), center);
+            dc.drawText(cx, 215, Graphics.FONT_XTINY, (WatchUi.loadResource(Rez.Strings.RecapStreak) as String) + " " + _model.getStreak(), center);
         }
     }
 }

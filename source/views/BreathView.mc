@@ -180,7 +180,7 @@ class BreathView extends WatchUi.View {
             }
             dc.drawText(cx, 196, Graphics.FONT_XTINY, line, center);
             dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, 222, Graphics.FONT_XTINY, _sAgain, center);
+            dc.drawText(cx, 218, Graphics.FONT_XTINY, _sAgain, center);
             return;
         }
 
@@ -190,7 +190,7 @@ class BreathView extends WatchUi.View {
         dc.drawText(cx, 186, Graphics.FONT_MEDIUM, left.toString(), center);
         drawRounds(dc, cx);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 248, Graphics.FONT_XTINY, _sSkip, center);
+        dc.drawText(cx, 52, Graphics.FONT_XTINY, _sSkip, center);
         drawHr(dc, cx, center);
     }
 

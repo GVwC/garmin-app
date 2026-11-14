@@ -53,6 +53,7 @@
 
     <string id="GoalSteps">Steps</string>
     <string id="GoalActive">Active minutes</string>
+    <string id="GoalActiveShort">Active min</string>
     <string id="GoalFloors">Floors</string>
 
     <string id="Xp">XP</string>
@@ -66,7 +67,7 @@
 
     <string id="HintLive">START: goals</string>
     <string id="HintMenu">Hold UP: menu</string>
-    <string id="HintDemo">DOWN next  BACK exit</string>
+    <string id="HintDemo">DOWN: next scene</string>
     <string id="Demo">STORY</string>
 
     <!-- Story scene captions, index = DemoScenarios scene -->
@@ -97,7 +98,7 @@
     <string id="Off">Off</string>
     <string id="Done">Done - let's go!</string>
     <string id="PickFur">Fur colour</string>
-    <string id="PickFurSetup">Pick your monkey</string>
+    <string id="PickFurSetup">Choose fur</string>
     <string id="PickGoals">Goals that feed me</string>
     <string id="PickGoalsSetup">What feeds me?</string>
     <string id="Fur0">Brown</string>
