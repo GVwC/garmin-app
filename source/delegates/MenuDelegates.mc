@@ -1,15 +1,17 @@
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-// App menu: Goal -> goal picker, Demo mode toggle.
+// App menu: Goal -> goal picker, Breathe, Reminders toggle, Demo mode toggle.
 class AppMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     private var _model as MonkeyModel;
+    private var _vitals as VitalsModel;
     private var _view as MainView;
 
-    function initialize(model as MonkeyModel, view as MainView) {
+    function initialize(model as MonkeyModel, vitals as VitalsModel, view as MainView) {
         Menu2InputDelegate.initialize();
         _model = model;
+        _vitals = vitals;
         _view = view;
     }
 
@@ -17,6 +19,14 @@ class AppMenuDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == Menus.MENU_GOAL) {
             WatchUi.switchToView(Menus.goalTypeMenu(_model), new GoalTypeMenuDelegate(_model, _view), WatchUi.SLIDE_LEFT);
+        } else if (id == Menus.MENU_BREATHE) {
+            var breath = new BreathView(_model);
+            WatchUi.switchToView(breath, new BreathDelegate(breath, _view), WatchUi.SLIDE_LEFT);
+        } else if (id == Menus.MENU_REMINDERS) {
+            var on = (item as ToggleMenuItem).isEnabled();
+            _vitals.setEnabled(on);
+            Reminders.sync(on);
+            Log.debug("reminders=" + on);
         } else if (id == Menus.MENU_DEMO) {
             if (_model.isDemo()) {
                 _model.exitDemo();

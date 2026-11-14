@@ -12,7 +12,7 @@ Read [docs/API_COMPATIBILITY.md](docs/API_COMPATIBILITY.md) for device facts and
 5. **Keep memory low.** Watch-app limit on this device is ~768 KB; glances/background are 64 KB. Load resources once (`onLayout`/`onShow`), release them in `onHide`, avoid large arrays/dictionaries and string building in `onUpdate`.
 6. **Minimize battery use.** No timers faster than needed, stop timers/sensors in `onHide`/`onStop`, request sensors only while the screen needs them, no polling loops.
 7. **Avoid unnecessary dependencies** (barrels, web requests, permissions). Add a permission only when the feature needs it.
-8. **Keep logic modular.** UI in `source/views`, input in `source/delegates`, state/logic in `source/model` (no `WatchUi`/`Graphics` there), Toybox data access in `source/services`, helpers in `source/utils`.
+8. **Keep logic modular.** UI in `source/views`, input in `source/delegates`, state/logic in `source/model` (no `WatchUi`/`Graphics` there), Toybox data access in `source/services`, the background service in `source/background`, helpers in `source/utils`.
 9. **Compile after every change:** `.\scripts\ciq.ps1 build` (warnings on, strict type-check). Treat new warnings as errors to fix.
 10. **Run simulator checks whenever possible:** `.\scripts\ciq.ps1 test` (unit tests) and `.\scripts\ciq.ps1 run` (smoke test). Report each check as Passed / Failed / Not attempted / Requires physical hardware — never claim a check passed if it didn't run.
 11. **Flag unverified hardware behaviour** (sensors, GPS, battery, button feel, touch, backlight, real memory) explicitly — the simulator does not prove it.

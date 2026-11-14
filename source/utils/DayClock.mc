@@ -4,6 +4,7 @@ import Toybox.Time;
 
 // Local calendar day numbers (days since 1970-01-01 in device-local time).
 // A new day starts at local midnight, matching Garmin's midnight step reset.
+(:background, :glance)
 module DayClock {
 
     const DAY_SEC = 86400;

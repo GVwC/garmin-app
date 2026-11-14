@@ -105,18 +105,18 @@ function goalChangeAppliesNow(logger as Logger) as Boolean {
     var m = new MonkeyModel();
     m.update(70, 3000, noHistory());
     Test.assertEqual(m.getPose(), MonkeyModel.POSE_PERK);
-    m.setGoal(MonkeyModel.GOAL_STEPS, 3000);
+    m.setGoal(Goals.GOAL_STEPS, 3000);
     Test.assertEqual(m.getPose(), MonkeyModel.POSE_EAT);
     Test.assert(m.takeEvent() != null);
     // Raising the goal keeps today's XP but shows progress against the new target.
-    m.setGoal(MonkeyModel.GOAL_STEPS, 10000);
+    m.setGoal(Goals.GOAL_STEPS, 10000);
     Test.assertEqual(m.getXp(), MonkeyModel.XP_GOAL);
     Test.assertEqual(m.getPose(), MonkeyModel.POSE_RELAX);
     // Other goal types use their own targets.
-    m.setGoal(MonkeyModel.GOAL_ACTIVE, 30);
+    m.setGoal(Goals.GOAL_ACTIVE, 30);
     m.update(70, 29, noHistory());
     Test.assertEqual(m.getPose(), MonkeyModel.POSE_PERK);
-    Test.assertEqual(MonkeyModel.targetsFor(MonkeyModel.GOAL_FLOORS)[0], 5);
+    Test.assertEqual(Goals.targetsFor(Goals.GOAL_FLOORS)[0], 5);
     return true;
 }
 
@@ -137,8 +137,20 @@ function demoCyclesWithoutTouchingLiveXp(logger as Logger) as Boolean {
     var e = m.takeEvent();
     Test.assert(e != null && e[1]);
     m.nextDemoStage();
-    Test.assertEqual(m.getDemoStage(), MonkeyModel.DEMO_MISSED);
+    Test.assertEqual(m.getDemoStage(), 3);
     Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL - MonkeyModel.XP_MISS);
+    // Going back never replays XP effects.
+    m.prevDemoStage();
+    Test.assertEqual(m.getDemoStage(), 2);
+    Test.assert(m.takeEvent() == null);
+    Test.assertEqual(m.getXp(), 2 * MonkeyModel.XP_GOAL - MonkeyModel.XP_MISS);
+    // Walk to the revive stage (+XP_REVIVE), then wrap around to stage 0.
+    for (var i = 3; i < DemoScenarios.COUNT; i++) {
+        m.nextDemoStage();
+    }
+    Test.assertEqual(m.getDemoStage(), DemoScenarios.COUNT - 1);
+    var r = m.takeEvent();
+    Test.assert(r != null && r[3] == MonkeyModel.EV_REVIVE);
     m.nextDemoStage();
     Test.assertEqual(m.getDemoStage(), 0);
     // Live updates while in demo are ignored for rewards.

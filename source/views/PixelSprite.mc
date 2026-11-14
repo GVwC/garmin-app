@@ -1,11 +1,11 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 
-// Turns MonkeyArt patches into packed horizontal runs once (onLayout), then draws
-// them as scaled rectangles. One Number per run: x | y | length | colour index.
+// Turns MonkeyArt patches into packed horizontal runs, then draws them as scaled rectangles.
+// One Number per run: x | y | length | colour index. Compile is the slow part (char by char),
+// so callers compile the shared body once and each pose's small patches lazily.
 module PixelSprite {
 
-    const CHARS = "KBDTPWGYR";
     const OFFSET = 64; // lets patches use small negative x/y
 
     function palette() as Array<Number> {
@@ -25,6 +25,7 @@ module PixelSprite {
     // layers: list of patch lists (body first, then pose); later patches paint over earlier ones.
     function compile(layers as Array<Array>) as Array<Number> {
         var out = [] as Array<Number>;
+        var lookup = indexes();
         for (var l = 0; l < layers.size(); l++) {
             var patches = layers[l];
             for (var p = 0; p < patches.size(); p++) {
@@ -33,29 +34,36 @@ module PixelSprite {
                 var py = patch[1] as Number;
                 var rows = patch[2] as Array<String>;
                 for (var j = 0; j < rows.size(); j++) {
-                    addRuns(out, px, py + j, rows[j].toCharArray());
+                    addRuns(out, px, py + j, rows[j].toCharArray(), lookup);
                 }
             }
         }
         return out;
     }
 
-    function addRuns(out as Array<Number>, x0 as Number, y as Number, chars as Array<Char>) as Void {
+    function addRuns(out as Array<Number>, x0 as Number, y as Number, chars as Array<Char>,
+            lookup as Dictionary<Char, Number>) as Void {
         var n = chars.size();
         var i = 0;
         while (i < n) {
             var c = chars[i];
-            var idx = CHARS.find(c.toString());
+            var idx = lookup[c];
             if (idx == null) {
                 i++;
                 continue;
             }
             var start = i;
+            i++;
             while (i < n && chars[i] == c) {
                 i++;
             }
             out.add(((x0 + start + OFFSET) << 24) | ((y + OFFSET) << 16) | ((i - start) << 8) | idx);
         }
+    }
+
+    // Char -> palette index; '.' (transparent) is absent.
+    function indexes() as Dictionary<Char, Number> {
+        return {'K' => 0, 'B' => 1, 'D' => 2, 'T' => 3, 'P' => 4, 'W' => 5, 'G' => 6, 'Y' => 7, 'R' => 8};
     }
 
     function draw(dc as Dc, runs as Array<Number>, colors as Array<Number>, ox as Number, oy as Number, scale as Number) as Void {

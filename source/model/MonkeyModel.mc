@@ -1,22 +1,19 @@
 import Toybox.Application;
 import Toybox.Lang;
 
-// Monkey Miles state: one daily goal, XP, the once-per-day reward and demo mode.
+// Monkey Miles game state: one daily goal, XP and levels, bonuses, and the scripted demo.
 // Days are local day numbers (see DayClock). No WatchUi/Graphics here, so it is unit-testable.
 //
 // XP rules
 //   - Reaching today's goal (live): +XP_GOAL once per day, celebration plays once.
 //   - Each finished day since the last check is settled from watch history:
 //     goal met -> +XP_GOAL (unless already rewarded live), missed -> -XP_MISS, no data -> nothing.
+//   - Bonuses: revived from tiredness +XP_REVIVE (max 3/day, counted by VitalsModel),
+//     a finished breathing session +XP_BREATH once per day.
 //   - XP never drops below 0. Level = 1 + xp / XP_PER_LEVEL.
 // Demo mode works on a copy of XP and never touches stored state.
 // Nothing is written to storage until load() has been called (the app does; unit tests don't).
 class MonkeyModel {
-
-    static const GOAL_STEPS = 0;
-    static const GOAL_ACTIVE = 1;
-    static const GOAL_FLOORS = 2;
-    static const GOAL_TYPES = 3;
 
     static const POSE_RELAX = 0;
     static const POSE_PERK = 1;
@@ -24,24 +21,28 @@ class MonkeyModel {
 
     static const XP_GOAL = 100;
     static const XP_MISS = 50;
+    static const XP_REVIVE = 20;
+    static const XP_BREATH = 10;
     static const XP_PER_LEVEL = 300;
     static const MAX_CATCH_UP_DAYS = 7;
 
-    static const DEMO_STAGES = 4;
-    static const DEMO_MISSED = 3;
+    // Event kinds for the banner.
+    static const EV_GOAL = 0;
+    static const EV_MISSED = 1;
+    static const EV_REVIVE = 2;
+    static const EV_BREATH = 3;
 
-    private static const KEY_TYPE = "goalType";
-    private static const KEY_TARGET = "goalTarget";
-    private static const KEY_XP = "xp";
     private static const KEY_REWARD_DAY = "rewardDay";
     private static const KEY_EVAL_DAY = "lastEvalDay";
+    private static const KEY_BREATH_DAY = "breathDay";
 
     // Persisted (live only).
-    private var _goalType as Number = GOAL_STEPS;
+    private var _goalType as Number = Goals.GOAL_STEPS;
     private var _target as Number = 5000;
     private var _xp as Number = 0;
     private var _rewardDay as Number? = null;
     private var _lastEvalDay as Number? = null;
+    private var _breathDay as Number? = null;
 
     private var _persist as Boolean = false;
 
@@ -54,28 +55,17 @@ class MonkeyModel {
     private var _demoStage as Number = 0;
     private var _demoXp as Number = 0;
 
-    // One-shot event for the view: XP change to announce, celebration, level up.
+    // One-shot event for the view: XP change to announce, celebration, level up, kind.
     private var _eventXp as Number = 0;
     private var _eventCelebrate as Boolean = false;
     private var _eventLevelUp as Boolean = false;
+    private var _eventKind as Number = EV_GOAL;
+    private var _eventPending as Boolean = false;
 
     function initialize() {
     }
 
     // ---------- goals ----------
-
-    static function targetsFor(goalType as Number) as Array<Number> {
-        if (goalType == GOAL_ACTIVE) {
-            return [10, 20, 30, 60];
-        } else if (goalType == GOAL_FLOORS) {
-            return [5, 10, 15, 25];
-        }
-        return [1000, 3000, 5000, 10000];
-    }
-
-    static function defaultTarget(goalType as Number) as Number {
-        return targetsFor(goalType)[2];
-    }
 
     function getGoalType() as Number {
         return _goalType;
@@ -139,7 +129,7 @@ class MonkeyModel {
         _lastEvalDay = today - 1;
         if (delta != 0) {
             _xp = clampXp(_xp + delta);
-            announce(_xp - before, false, levelOf(_xp) > levelOf(before));
+            announce(_xp - before, false, levelOf(_xp) > levelOf(before), delta > 0 ? EV_GOAL : EV_MISSED);
         }
         save();
     }
@@ -156,7 +146,39 @@ class MonkeyModel {
         _xp += XP_GOAL;
         _rewardDay = _today;
         save();
-        announce(XP_GOAL, true, levelOf(_xp) > levelOf(before));
+        announce(XP_GOAL, true, levelOf(_xp) > levelOf(before), EV_GOAL);
+    }
+
+    // ---------- bonuses ----------
+
+    // Revives are already capped per day by VitalsModel.
+    function addReviveBonus() as Void {
+        addXp(XP_REVIVE, EV_REVIVE);
+    }
+
+    // Once per day; returns true when XP was awarded.
+    function addBreathBonus() as Boolean {
+        if (_demo) {
+            addXp(XP_BREATH, EV_BREATH);
+            return true;
+        }
+        if (_breathDay != null && _breathDay == _today) {
+            return false;
+        }
+        _breathDay = _today;
+        addXp(XP_BREATH, EV_BREATH);
+        return true;
+    }
+
+    private function addXp(xp as Number, kind as Number) as Void {
+        var before = getXp();
+        if (_demo) {
+            _demoXp += xp;
+        } else {
+            _xp += xp;
+            save();
+        }
+        announce(xp, false, levelOf(getXp()) > levelOf(before), kind);
     }
 
     private static function valueForDay(history as Array<Array<Number?> >, day as Number) as Number? {
@@ -175,7 +197,7 @@ class MonkeyModel {
         return _demo;
     }
 
-    // Demo starts fresh at 20 % with a copy of the live XP.
+    // Demo starts fresh at stage 0 with a copy of the live XP.
     function enterDemo() as Void {
         _demo = true;
         _demoStage = 0;
@@ -189,22 +211,32 @@ class MonkeyModel {
         checkReward();
     }
 
-    // 20 % -> 65 % -> 100 % (+XP, celebration) -> missed day (-XP) -> 20 % ...
+    // Walks the DemoScenarios table. Effects (+XP, -XP, celebration) only play going forward.
     function nextDemoStage() as Void {
         if (!_demo) {
             return;
         }
-        _demoStage = (_demoStage + 1) % DEMO_STAGES;
+        _demoStage = (_demoStage + 1) % DemoScenarios.COUNT;
+        clearEvent();
+        var effect = DemoScenarios.row(_demoStage)[DemoScenarios.EFFECT];
         var before = _demoXp;
-        if (_demoStage == 2) {
+        if (effect == DemoScenarios.EFFECT_GOAL) {
             _demoXp += XP_GOAL;
-            announce(XP_GOAL, true, levelOf(_demoXp) > levelOf(before));
-        } else if (_demoStage == DEMO_MISSED) {
+            announce(XP_GOAL, true, levelOf(_demoXp) > levelOf(before), EV_GOAL);
+        } else if (effect == DemoScenarios.EFFECT_MISSED) {
             _demoXp = clampXp(_demoXp - XP_MISS);
-            announce(_demoXp - before, false, false);
-        } else {
-            clearEvent();
+            announce(_demoXp - before, false, false, EV_MISSED);
+        } else if (effect == DemoScenarios.EFFECT_REVIVE) {
+            addXp(XP_REVIVE, EV_REVIVE);
         }
+    }
+
+    function prevDemoStage() as Void {
+        if (!_demo) {
+            return;
+        }
+        _demoStage = (_demoStage + DemoScenarios.COUNT - 1) % DemoScenarios.COUNT;
+        clearEvent();
     }
 
     function getDemoStage() as Number {
@@ -212,7 +244,7 @@ class MonkeyModel {
     }
 
     static function demoPercent(stage as Number) as Number {
-        return [20, 65, 100, 35][stage];
+        return DemoScenarios.row(stage)[DemoScenarios.PERCENT];
     }
 
     // ---------- derived state for the view ----------
@@ -267,22 +299,27 @@ class MonkeyModel {
 
     // ---------- one-shot events ----------
 
-    private function announce(xp as Number, celebrate as Boolean, levelUp as Boolean) as Void {
+    private function announce(xp as Number, celebrate as Boolean, levelUp as Boolean, kind as Number) as Void {
         _eventXp = xp;
         _eventCelebrate = celebrate;
         _eventLevelUp = levelUp;
+        _eventKind = kind;
+        _eventPending = xp != 0 || celebrate;
     }
 
     private function clearEvent() as Void {
-        announce(0, false, false);
+        _eventPending = false;
+        _eventXp = 0;
+        _eventCelebrate = false;
+        _eventLevelUp = false;
     }
 
-    // The view takes the event once; returns [xpDelta, celebrate, levelUp] or null.
-    function takeEvent() as [Number, Boolean, Boolean]? {
-        if (_eventXp == 0 && !_eventCelebrate) {
+    // The view takes the event once; returns [xpDelta, celebrate, levelUp, kind] or null.
+    function takeEvent() as [Number, Boolean, Boolean, Number]? {
+        if (!_eventPending) {
             return null;
         }
-        var e = [_eventXp, _eventCelebrate, _eventLevelUp] as [Number, Boolean, Boolean];
+        var e = [_eventXp, _eventCelebrate, _eventLevelUp, _eventKind] as [Number, Boolean, Boolean, Number];
         clearEvent();
         return e;
     }
@@ -291,25 +328,27 @@ class MonkeyModel {
 
     function load() as Void {
         _persist = true;
-        _goalType = readNumber(KEY_TYPE, GOAL_STEPS);
-        if (_goalType < 0 || _goalType >= GOAL_TYPES) {
-            _goalType = GOAL_STEPS;
+        _goalType = readNumber(Goals.KEY_TYPE, Goals.GOAL_STEPS);
+        if (_goalType < 0 || _goalType >= Goals.GOAL_TYPES) {
+            _goalType = Goals.GOAL_STEPS;
         }
-        _target = readNumber(KEY_TARGET, defaultTarget(_goalType));
-        _xp = clampXp(readNumber(KEY_XP, 0));
+        _target = readNumber(Goals.KEY_TARGET, Goals.defaultTarget(_goalType));
+        _xp = clampXp(readNumber(Goals.KEY_XP, 0));
         _rewardDay = readOptional(KEY_REWARD_DAY);
         _lastEvalDay = readOptional(KEY_EVAL_DAY);
+        _breathDay = readOptional(KEY_BREATH_DAY);
     }
 
     function save() as Void {
         if (_demo || !_persist) {
             return;
         }
-        Storage.setValue(KEY_TYPE, _goalType);
-        Storage.setValue(KEY_TARGET, _target);
-        Storage.setValue(KEY_XP, _xp);
+        Storage.setValue(Goals.KEY_TYPE, _goalType);
+        Storage.setValue(Goals.KEY_TARGET, _target);
+        Storage.setValue(Goals.KEY_XP, _xp);
         Storage.setValue(KEY_REWARD_DAY, _rewardDay);
         Storage.setValue(KEY_EVAL_DAY, _lastEvalDay);
+        Storage.setValue(KEY_BREATH_DAY, _breathDay);
     }
 
     private static function readNumber(key as String, fallback as Number) as Number {

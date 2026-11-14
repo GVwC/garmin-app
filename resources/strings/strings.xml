@@ -1,29 +1,86 @@
 <strings>
     <string id="AppName">Monkey Miles</string>
 
+    <!-- Shared with the glance (scope="glance" strings are also available in the app). -->
+    <string id="GlanceName" scope="glance">Monkey Miles</string>
+    <string id="Level" scope="glance">Lv</string>
+    <string id="UnitSteps" scope="glance">steps</string>
+    <string id="UnitActive" scope="glance">min</string>
+    <string id="UnitFloors" scope="glance">floors</string>
+    <string id="Unavailable" scope="glance">unavailable</string>
+
+    <!-- Status titles, index = MonkeyStatus.MSG_* -->
+    <string id="St0" scope="glance">Running on empty</string>
+    <string id="St1" scope="glance">Night night</string>
+    <string id="St2" scope="glance">Stressed</string>
+    <string id="St3" scope="glance">Fell asleep sitting</string>
+    <string id="St4" scope="glance">Still for 90 min</string>
+    <string id="St5" scope="glance">Low recharge</string>
+    <string id="St6" scope="glance">HR up, not moving</string>
+    <string id="St7" scope="glance">On the move!</string>
+
+    <!-- Recommendations, index = MonkeyStatus.MSG_* -->
+    <string id="Ac0">Walk now, bed early</string>
+    <string id="Ac1">Quiet hours</string>
+    <string id="Ac2">START: breathe</string>
+    <string id="Ac3">Walk 5 min to wake</string>
+    <string id="Ac4">A 5-min walk helps</string>
+    <string id="Ac5">Ease in, bed early</string>
+    <string id="Ac6">START: 3 breaths</string>
+    <string id="Ac7">Good stress, go!</string>
+
+    <!-- Background reminders, index = VitalsModel.NUDGE_* -->
+    <string id="Nudge0" scope="background">Running on empty. Walk 5 min now and go to bed early tonight.</string>
+    <string id="Nudge1" scope="background">Your monkey is stressed. Open it for a 1-minute breather.</string>
+    <string id="Nudge2" scope="background">Still for 90 min. A 5-minute walk wakes your monkey up.</string>
+    <string id="Nudge3" scope="background">Short recharge last night. Ease into today, lights out early.</string>
+    <string id="Nudge4" scope="background">Your monkey is hungry: under half your goal so far.</string>
+
     <string id="GoalSteps">Steps</string>
     <string id="GoalActive">Active minutes</string>
     <string id="GoalFloors">Floors</string>
-    <string id="UnitSteps">steps</string>
-    <string id="UnitActive">min</string>
-    <string id="UnitFloors">floors</string>
-    <string id="Unavailable">unavailable</string>
 
-    <string id="Level">Lv</string>
     <string id="Xp">XP</string>
     <string id="LevelUp">LEVEL UP!</string>
     <string id="GoalHit">Banana!</string>
     <string id="GoalMissed">Missed</string>
+    <string id="Revived">I'm back!</string>
+    <string id="Calmed">Calm again</string>
+    <string id="Breathed">Breather done</string>
 
     <string id="HintLive">START: goal</string>
     <string id="HintMenu">Hold UP: menu</string>
-    <string id="HintDemo">DOWN next  BACK exit</string>
+    <string id="HintDemo">UP/DOWN  BACK exit</string>
     <string id="Demo">DEMO</string>
-    <string id="DemoMissed">missed day</string>
+
+    <!-- Demo stage labels, index = DemoScenarios stage -->
+    <string id="Dm0">goal 20%</string>
+    <string id="Dm1">goal 65%</string>
+    <string id="Dm2">goal reached</string>
+    <string id="Dm3">missed day</string>
+    <string id="Dm4">still 90 min</string>
+    <string id="Dm5">still 2 h</string>
+    <string id="Dm6">low recharge</string>
+    <string id="Dm7">exhausted</string>
+    <string id="Dm8">alert</string>
+    <string id="Dm9">stressed</string>
+    <string id="Dm10">exercising</string>
+    <string id="Dm11">revived</string>
 
     <string id="MenuTitle">Monkey Miles</string>
     <string id="MenuGoal">Goal</string>
+    <string id="MenuBreathe">Breathe</string>
+    <string id="MenuBreatheSub">1 min box breathing</string>
+    <string id="MenuReminders">Reminders</string>
+    <string id="MenuRemindersSub">Every 30 min, not at night</string>
     <string id="MenuDemo">Demo mode</string>
     <string id="PickGoal">Feed me with</string>
     <string id="PickTarget">Daily target</string>
+
+    <string id="BreathIn">Breathe in</string>
+    <string id="BreathHold">Hold</string>
+    <string id="BreathOut">Breathe out</string>
+    <string id="BreathDone">Nice. Feel calmer?</string>
+    <string id="BreathAgain">START again  BACK done</string>
+    <string id="Hr">HR</string>
 </strings>

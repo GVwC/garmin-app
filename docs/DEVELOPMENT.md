@@ -21,10 +21,10 @@ On the simulated watch, click the physical buttons on the image or the screen:
 
 | Watch input | Behaviour (BehaviorDelegate) | Monkey Miles action |
 |---|---|---|
-| START (top right) / tap screen | `onSelect` | goal picker |
+| START (top right) / tap screen | `onSelect` | goal picker, or breathing when stressed/alert |
 | BACK (bottom right) / swipe right | `onBack` | leave demo, else exit app |
-| UP / DOWN (left) / swipe | `onPreviousPage` / `onNextPage` | DOWN: next demo stage |
-| Hold UP | `onMenu` | menu: goal, demo mode |
+| UP / DOWN (left) / swipe | `onPreviousPage` / `onNextPage` | demo: previous / next scenario |
+| Hold UP | `onMenu` | menu: goal, breathe, reminders, demo |
 
 ## Debugging
 

@@ -1,5 +1,6 @@
 import Toybox.Lang;
 
+(:background, :glance)
 module Fmt {
 
     // 3420 -> "3,420", 10000 -> "10,000".

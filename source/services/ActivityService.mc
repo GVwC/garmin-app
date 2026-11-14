@@ -1,23 +1,29 @@
 import Toybox.ActivityMonitor;
 import Toybox.Lang;
 
-// Reads Garmin's own daily totals (reset at local midnight). No permission needed.
+// Today's totals from Garmin (reset at local midnight). No permission needed.
+// Used by the app, the background service (midday goal nudge) and the glance.
+(:background, :glance)
 module ActivityService {
 
     // Today's value for the goal type, or null when the watch has no reading.
     function todayValue(goalType as Number) as Number? {
         var info = ActivityMonitor.getInfo();
-        if (goalType == MonkeyModel.GOAL_ACTIVE) {
+        if (goalType == Goals.GOAL_ACTIVE) {
             var am = info.activeMinutesDay;
             return (am != null) ? am.total : null;
-        } else if (goalType == MonkeyModel.GOAL_FLOORS) {
+        } else if (goalType == Goals.GOAL_FLOORS) {
             return info.floorsClimbed;
         }
         return info.steps;
     }
+}
 
-    // Finished days (max 7, newest first) as [day, value or null].
-    function history(goalType as Number) as Array<Array<Number?> > {
+// Finished days for XP catch-up (foreground only).
+module ActivityHistory {
+
+    // Max 7 days, newest first, as [day, value or null].
+    function days(goalType as Number) as Array<Array<Number?> > {
         var out = [] as Array<Array<Number?> >;
         var hist = ActivityMonitor.getHistory();
         var today = DayClock.today();
@@ -26,10 +32,10 @@ module ActivityService {
             var start = h.startOfDay;
             var day = (start != null) ? DayClock.dayOfMoment(start) : today - 1 - i;
             var v = null as Number?;
-            if (goalType == MonkeyModel.GOAL_ACTIVE) {
+            if (goalType == Goals.GOAL_ACTIVE) {
                 var am = h.activeMinutes;
                 v = (am != null) ? am.total : null;
-            } else if (goalType == MonkeyModel.GOAL_FLOORS) {
+            } else if (goalType == Goals.GOAL_FLOORS) {
                 v = h.floorsClimbed;
             } else {
                 v = h.steps;

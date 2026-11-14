@@ -6,6 +6,8 @@ module Menus {
 
     const MENU_GOAL = 100;
     const MENU_DEMO = 101;
+    const MENU_BREATHE = 102;
+    const MENU_REMINDERS = 103;
 
     function goalLabel(goalType as Number) as String {
         var ids = [Rez.Strings.GoalSteps, Rez.Strings.GoalActive, Rez.Strings.GoalFloors];
@@ -21,18 +23,23 @@ module Menus {
         return Fmt.thousands(model.getTarget()) + " " + unitLabel(model.getGoalType());
     }
 
-    function appMenu(model as MonkeyModel) as Menu2 {
-        var menu = new WatchUi.Menu2({:title => WatchUi.loadResource(Rez.Strings.MenuTitle) as String});
-        menu.addItem(new WatchUi.MenuItem(WatchUi.loadResource(Rez.Strings.MenuGoal) as String,
-            goalSummary(model), MENU_GOAL, null));
-        menu.addItem(new WatchUi.ToggleMenuItem(WatchUi.loadResource(Rez.Strings.MenuDemo) as String,
-            null, MENU_DEMO, model.isDemo(), null));
+    function s(id as ResourceId) as String {
+        return WatchUi.loadResource(id) as String;
+    }
+
+    function appMenu(model as MonkeyModel, vitals as VitalsModel) as Menu2 {
+        var menu = new WatchUi.Menu2({:title => s(Rez.Strings.MenuTitle)});
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuGoal), goalSummary(model), MENU_GOAL, null));
+        menu.addItem(new WatchUi.MenuItem(s(Rez.Strings.MenuBreathe), s(Rez.Strings.MenuBreatheSub), MENU_BREATHE, null));
+        menu.addItem(new WatchUi.ToggleMenuItem(s(Rez.Strings.MenuReminders), s(Rez.Strings.MenuRemindersSub),
+            MENU_REMINDERS, vitals.isEnabled(), null));
+        menu.addItem(new WatchUi.ToggleMenuItem(s(Rez.Strings.MenuDemo), null, MENU_DEMO, model.isDemo(), null));
         return menu;
     }
 
     function goalTypeMenu(model as MonkeyModel) as Menu2 {
-        var menu = new WatchUi.Menu2({:title => WatchUi.loadResource(Rez.Strings.PickGoal) as String});
-        for (var t = 0; t < MonkeyModel.GOAL_TYPES; t++) {
+        var menu = new WatchUi.Menu2({:title => s(Rez.Strings.PickGoal)});
+        for (var t = 0; t < Goals.GOAL_TYPES; t++) {
             var sub = (t == model.getGoalType()) ? goalSummary(model) : null;
             menu.addItem(new WatchUi.MenuItem(goalLabel(t), sub, t, null));
         }
@@ -41,8 +48,8 @@ module Menus {
     }
 
     function targetMenu(model as MonkeyModel, goalType as Number) as Menu2 {
-        var menu = new WatchUi.Menu2({:title => WatchUi.loadResource(Rez.Strings.PickTarget) as String});
-        var targets = MonkeyModel.targetsFor(goalType);
+        var menu = new WatchUi.Menu2({:title => s(Rez.Strings.PickTarget)});
+        var targets = Goals.targetsFor(goalType);
         var focus = 2;
         for (var i = 0; i < targets.size(); i++) {
             menu.addItem(new WatchUi.MenuItem(Fmt.thousands(targets[i]) + " " + unitLabel(goalType), null, targets[i], null));
